@@ -171,7 +171,21 @@ merged["gender"] = merged["gender"].map({"M": 1, "F": 0}).fillna(0)
 merged = merged.sort_values(by=["subject_id", "charttime"])
 
 # forward + backward fill within each ICU stay
-merged = merged.groupby("stay_id").apply(lambda x: x.ffill().bfill()).reset_index(drop=True)
+vital_cols = [
+    "heart_rate",
+    "systolic_bp",
+    "diastolic_bp",
+    "mean_bp",
+    "respiratory_rate",
+    "spo2"
+]
+
+merged[vital_cols] = (
+    merged.groupby("stay_id")[vital_cols]
+    .ffill()
+    .bfill()
+)
+# merged = merged.groupby("stay_id").apply(lambda x: x.ffill().bfill()).reset_index(drop=True)
 
 # save dataset
 print("Saving dataset...")

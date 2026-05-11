@@ -2,13 +2,14 @@ import pandas as pd
 import numpy as np
 
 from sklearn.model_selection import train_test_split
-from xgboost import XGBClassifier
 from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     accuracy_score
 )
 from sklearn.preprocessing import StandardScaler
+
+from xgboost import XGBClassifier
 
 # ---------------- LOAD DATASET ---------------- #
 
@@ -18,19 +19,17 @@ df = pd.read_csv("data/processed/sepsis_dataset.csv")
 
 # ---------------- FEATURE ENGINEERING ---------------- #
 
-# Shock Index = Heart Rate / Systolic BP
 df["shock_index"] = (
     df["heart_rate"] /
     (df["systolic_bp"] + 1)
 )
 
-# Pulse Pressure = Systolic BP - Diastolic BP
 df["pulse_pressure"] = (
     df["systolic_bp"] -
     df["diastolic_bp"]
 )
 
-# ---------------- SELECT FEATURES ---------------- #
+# ---------------- FEATURES ---------------- #
 
 feature_cols = [
     "heart_rate",
@@ -50,10 +49,8 @@ y = df["sepsis"]
 
 # ---------------- CLEAN DATA ---------------- #
 
-# replace infinity values
 X = X.replace([np.inf, -np.inf], np.nan)
 
-# fill missing values
 X = X.fillna(X.mean())
 
 # ---------------- TRAIN TEST SPLIT ---------------- #
@@ -70,8 +67,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 # ---------------- FEATURE SCALING ---------------- #
 
-# scaling is optional for Random Forest but kept for consistency
-
 scaler = StandardScaler()
 
 X_train = scaler.fit_transform(X_train)
@@ -81,14 +76,16 @@ X_test = scaler.transform(X_test)
 
 print("Training XGBoost model...")
 
-model = XGBClassifier(
-     n_estimators=100,
-     random_state=42,
-     learning_rate=0.1,
-     max_depth=5,
-    use_label_encoder=False, 
-    eval_metric='logloss'
-)
+model = XGBClassifier( n_estimators=400,
+                       max_depth=10, 
+                       learning_rate=0.03, 
+                       subsample=0.85, 
+                       colsample_bytree=0.85, 
+                       scale_pos_weight=2.5, 
+                       min_child_weight=3, 
+                       gamma=0.1, 
+                       random_state=42, 
+                       eval_metric="logloss" )
 
 model.fit(X_train, y_train)
 

@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
+
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     classification_report,
     confusion_matrix,
@@ -9,23 +10,28 @@ from sklearn.metrics import (
 )
 from sklearn.preprocessing import StandardScaler
 
-# load dataset
+# ---------------- LOAD DATASET ---------------- #
+
 print("Loading dataset...")
 
 df = pd.read_csv("data/processed/sepsis_dataset.csv")
 
+# ---------------- FEATURE ENGINEERING ---------------- #
+
+# Shock Index = Heart Rate / Systolic BP
 df["shock_index"] = (
     df["heart_rate"] /
-    df["systolic_bp"]
+    (df["systolic_bp"] + 1)
 )
 
+# Pulse Pressure = Systolic BP - Diastolic BP
 df["pulse_pressure"] = (
     df["systolic_bp"] -
     df["diastolic_bp"]
 )
 
+# ---------------- SELECT FEATURES ---------------- #
 
-# select features
 feature_cols = [
     "heart_rate",
     "systolic_bp",
@@ -39,17 +45,19 @@ feature_cols = [
     "anchor_age"
 ]
 
-
 X = df[feature_cols]
 y = df["sepsis"]
 
-# replace inf values with NaN
+# ---------------- CLEAN DATA ---------------- #
+
+# replace infinity values
 X = X.replace([np.inf, -np.inf], np.nan)
 
 # fill missing values
 X = X.fillna(X.mean())
 
-# split dataset
+# ---------------- TRAIN TEST SPLIT ---------------- #
+
 print("Splitting dataset...")
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -60,34 +68,36 @@ X_train, X_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
+# ---------------- FEATURE SCALING ---------------- #
+
+# scaling is optional for Random Forest but kept for consistency
+
 scaler = StandardScaler()
 
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# create model
-print("Training Logistic Regression model...")
+# ---------------- RANDOM FOREST MODEL ---------------- #
 
-model = LogisticRegression(
-    max_iter=1000,
-    class_weight="balanced"
+print("Training Random Forest model...")
+
+model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42,
+    class_weight="balanced",
+    n_jobs=-1
 )
 
 model.fit(X_train, y_train)
 
-# predictions
+# ---------------- PREDICTIONS ---------------- #
+
 print("Making predictions...")
 
 y_pred = model.predict(X_test)
 
-coefficients = pd.DataFrame({
-    "Feature": feature_cols,
-    "Coefficient": model.coef_[0]
-})
+# ---------------- EVALUATION ---------------- #
 
-print(coefficients)
-
-# evaluation
 print("\nAccuracy:")
 print(accuracy_score(y_test, y_pred))
 
@@ -96,3 +106,18 @@ print(confusion_matrix(y_test, y_pred))
 
 print("\nClassification Report:")
 print(classification_report(y_test, y_pred))
+
+# ---------------- FEATURE IMPORTANCE ---------------- #
+
+importance_df = pd.DataFrame({
+    "Feature": feature_cols,
+    "Importance": model.feature_importances_
+})
+
+importance_df = importance_df.sort_values(
+    by="Importance",
+    ascending=False
+)
+
+print("\nFeature Importance:")
+print(importance_df)

@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SepsisGuard — Personalized Disease Risk Prediction</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+:root {
+  --bg:#f5f4f0;--surface:#fff;--surface2:#eeece7;--border:rgba(0,0,0,0.09);
+  --text:#1a1a18;--muted:#6b6b65;--accent:#1a3a2a;--accent-light:#2d6b4a;
+  --green:#2d6b4a;--green-bg:#e8f5ee;--amber:#92550a;--amber-bg:#fef3e2;
+  --red:#8b1f1f;--red-bg:#fdeaea;--blue:#1a3a6b;--blue-bg:#e8f0fe;
+  --mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+nav{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:60px;}
+.nav-logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:-0.5px;}
+.nav-logo span{color:var(--green);}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--muted);transition:all .15s;font-family:'Inter',sans-serif;}
+.nav-tab:hover{background:var(--surface2);color:var(--text);}
+.nav-tab.active{background:var(--accent);color:white;}
+.nav-badge{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--border);padding:3px 10px;border-radius:20px;}
+
+.section{display:none;padding:48px 40px;max-width:1100px;margin:0 auto;}
+.section.active{display:block;}
+.page-title{font-family:'Syne',sans-serif;font-size:32px;font-weight:700;letter-spacing:-.8px;margin-bottom:8px;}
+.page-sub{color:var(--muted);font-size:15px;font-weight:300;margin-bottom:36px;}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;}
+.stat-card .s-label{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+.stat-card .s-val{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;letter-spacing:-1px;line-height:1;margin-bottom:4px;}
+.stat-card .s-note{font-size:12px;color:var(--muted);}
+.stat-card.green .s-val{color:var(--green);}
+.stat-card.amber .s-val{color:var(--amber);}
+.stat-card.blue .s-val{color:var(--blue);}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;}
+.card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;margin-bottom:4px;letter-spacing:-.2px;}
+.card-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
+
+.v-table{width:100%;border-collapse:collapse;}
+.v-table th{font-size:11px;color:var(--muted);font-weight:500;text-align:left;padding:0 0 10px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px;}
+.v-table td{font-size:13px;padding:10px 0;border-bottom:1px solid var(--border);}
+.v-table tr:last-child td{border-bottom:none;}
+.v-table .itemid{font-family:var(--mono);font-size:12px;color:var(--muted);}
+.v-table .dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;}
+
+.dist-bar-wrap{margin-bottom:12px;}
+.dist-bar-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
+.dist-bar-track{height:10px;background:var(--surface2);border-radius:20px;overflow:hidden;}
+.dist-bar-fill{height:100%;border-radius:20px;}
+
+.pipeline-steps{display:flex;flex-direction:column;gap:10px;}
+.p-step{display:flex;align-items:center;gap:12px;}
+.p-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:white;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.p-text{font-size:13px;}
+
+/* ===== PREDICT SECTION ===== */
+.mode-tabs{display:flex;gap:0;margin-bottom:28px;border:1px solid var(--border);border-radius:12px;overflow:hidden;width:fit-content;}
+.mode-tab{padding:10px 24px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:var(--surface);color:var(--muted);transition:all .15s;font-family:'Inter',sans-serif;}
+.mode-tab:not(:last-child){border-right:1px solid var(--border);}
+.mode-tab.active{background:var(--accent);color:white;}
+
+.predict-layout{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+
+.form-label-group{font-family:var(--mono);font-size:11px;color:var(--green);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;margin-top:24px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.form-label-group:first-child{margin-top:0;}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:12px;font-weight:500;color:var(--muted);}
+.field label .unit{font-family:var(--mono);font-size:10px;margin-left:3px;opacity:.6;}
+.field input,.field select{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;transition:all .15s;width:100%;}
+.field input:focus,.field select:focus{border-color:var(--green);background:white;box-shadow:0 0 0 3px rgba(45,107,74,.1);}
+.field select option{background:white;font-family:'Inter',sans-serif;}
+
+.btn-predict{width:100%;padding:14px;background:var(--accent);border:none;border-radius:12px;color:white;font-size:14px;font-weight:500;cursor:pointer;margin-top:20px;font-family:'Inter',sans-serif;letter-spacing:.2px;transition:all .2s;}
+.btn-predict:hover{background:var(--accent-light);transform:translateY(-1px);}
+.btn-predict:active{transform:translateY(0);}
+.btn-predict.loading{opacity:.6;cursor:not-allowed;pointer-events:none;}
+
+.error-box{background:var(--red-bg);border:1px solid rgba(139,31,31,.2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red);margin-top:10px;display:none;}
+
+.result-placeholder{background:var(--surface);border:1px dashed rgba(0,0,0,.15);border-radius:14px;padding:48px 24px;text-align:center;color:var(--muted);}
+.result-placeholder .ph-icon{font-size:40px;margin-bottom:12px;opacity:.3;}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:none;animation:fadeIn .35s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.result-header{padding:24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:20px;}
+.risk-badge{border-radius:12px;padding:20px;text-align:center;min-width:100px;}
+.risk-badge .rb-pct{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;line-height:1;}
+.risk-badge .rb-label{font-size:11px;font-weight:500;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;}
+.risk-badge.low{background:var(--green-bg);color:var(--green);}
+.risk-badge.moderate{background:var(--amber-bg);color:var(--amber);}
+.risk-badge.high{background:var(--red-bg);color:var(--red);}
+.result-info h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px;}
+.result-info .r-verdict{font-size:13px;color:var(--muted);line-height:1.6;}
+.result-metrics{display:grid;grid-template-columns:1fr 1fr;padding:20px 24px;gap:16px;border-bottom:1px solid var(--border);}
+.rm-item .rm-label{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;}
+.rm-item .rm-val{font-family:var(--mono);font-size:16px;font-weight:500;}
+.result-alert{padding:16px 24px;font-size:13px;line-height:1.7;display:flex;gap:10px;}
+.result-alert.low{background:var(--green-bg);color:#1d4a2f;}
+.result-alert.moderate{background:var(--amber-bg);color:#5c3600;}
+.result-alert.high{background:var(--red-bg);color:var(--red);}
+.ra-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+
+/* TEMPORAL */
+.temporal-container{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;}
+
+/* CSV */
+.csv-upload-area{border:2px dashed var(--border);border-radius:14px;padding:48px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface);}
+.csv-upload-area:hover,.csv-upload-area.dragover{border-color:var(--green);background:var(--green-bg);}
+.csv-upload-area .up-icon{font-size:36px;margin-bottom:12px;opacity:.4;}
+.csv-upload-area h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:600;margin-bottom:6px;}
+.csv-upload-area p{font-size:13px;color:var(--muted);line-height:1.6;}
+.csv-template{margin-top:12px;display:inline-block;font-size:12px;color:var(--green);text-decoration:underline;cursor:pointer;}
+#csv-file-input{display:none;}
+
+/* TEMPORAL + CSV RESULT */
+.temporal-result{display:none;margin-top:24px;animation:fadeIn .35s ease;}
+
+/* ===== FINAL VERDICT BOX (shared for temporal + csv) ===== */
+.final-verdict{border-radius:16px;padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;gap:28px;animation:fadeIn .4s ease;}
+.final-verdict.low{background:var(--green-bg);border:2px solid rgba(45,107,74,.25);}
+.final-verdict.moderate{background:var(--amber-bg);border:2px solid rgba(146,85,10,.25);}
+.final-verdict.high{background:var(--red-bg);border:2px solid rgba(139,31,31,.25);}
+.fv-icon{font-size:52px;line-height:1;flex-shrink:0;}
+.fv-body{flex:1;}
+.fv-sub{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;opacity:.65;}
+.fv-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;letter-spacing:-.5px;line-height:1.1;}
+.fv-desc{font-size:13px;margin-top:8px;line-height:1.7;opacity:.9;}
+.fv-actions{font-size:12.5px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.1);line-height:1.7;font-weight:500;}
+.fv-right{text-align:center;flex-shrink:0;min-width:90px;}
+.fv-pct{font-family:'Syne',sans-serif;font-size:40px;font-weight:700;line-height:1;}
+.fv-pct-label{font-size:11px;opacity:.65;margin-top:4px;}
+.fv-stats{display:flex;gap:10px;margin-top:6px;}
+.fv-stat{flex:1;background:rgba(255,255,255,.55);border-radius:10px;padding:10px 14px;text-align:center;}
+.fv-stat .fvs-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;}
+.fv-stat .fvs-label{font-size:11px;opacity:.65;margin-top:2px;}
+.fv-stat.danger .fvs-val{color:var(--red);}
+.fv-stat.warn .fvs-val{color:var(--amber);}
+.fv-stat.safe .fvs-val{color:var(--green);}
+.final-verdict.low .fv-title{color:#1d4a2f;}
+.final-verdict.low .fv-desc,.final-verdict.low .fv-actions{color:#1d4a2f;}
+.final-verdict.moderate .fv-title{color:#5c3600;}
+.final-verdict.moderate .fv-desc,.final-verdict.moderate .fv-actions{color:#5c3600;}
+.final-verdict.high .fv-title{color:var(--red);}
+.final-verdict.high .fv-desc,.final-verdict.high .fv-actions{color:var(--red);}
+
+.t-stat{background:var(--surface2);border-radius:10px;padding:10px 16px;text-align:center;}
+.t-stat .ts-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;}
+.t-stat .ts-label{font-size:11px;color:var(--muted);margin-top:2px;}
+.t-stat.danger .ts-val{color:var(--red);}
+.t-stat.warn .ts-val{color:var(--amber);}
+.t-stat.safe .ts-val{color:var(--green);}
+
+.pred-table-wrap{overflow-x:auto;margin-top:20px;}
+.pred-table{width:100%;border-collapse:collapse;font-size:13px;}
+.pred-table th{background:var(--surface2);padding:10px 14px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;}
+.pred-table th:first-child{border-radius:8px 0 0 8px;}
+.pred-table th:last-child{border-radius:0 8px 8px 0;}
+.pred-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:12px;}
+.pred-table tr:last-child td{border-bottom:none;}
+.risk-pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+.risk-pill.low{background:var(--green-bg);color:var(--green);}
+.risk-pill.moderate{background:var(--amber-bg);color:var(--amber);}
+.risk-pill.high{background:var(--red-bg);color:var(--red);}
+
+/* MODELS */
+.models-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px;}
+.model-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.model-card.best{border-color:var(--green);border-width:2px;}
+.model-header{padding:20px 22px 16px;border-bottom:1px solid var(--border);}
+.model-tag{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+.model-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.3px;}
+.model-best-badge{display:inline-block;background:var(--green-bg);color:var(--green);font-size:11px;font-weight:500;padding:2px 8px;border-radius:6px;margin-top:6px;}
+.model-metrics{padding:20px 22px;}
+.metric-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.metric-row:last-child{margin-bottom:0;}
+.metric-name{font-size:13px;color:var(--muted);}
+.metric-bar-wrap{flex:1;margin:0 12px;height:6px;background:var(--surface2);border-radius:20px;overflow:hidden;}
+.metric-bar{height:100%;border-radius:20px;}
+.metric-val{font-family:var(--mono);font-size:13px;font-weight:500;min-width:36px;text-align:right;}
+.feature-list{display:flex;flex-direction:column;gap:8px;}
+.feat-row{display:flex;align-items:center;gap:10px;}
+.feat-name{font-size:12px;width:120px;flex-shrink:0;color:var(--muted);}
+.feat-bar-wrap{flex:1;height:6px;background:var(--surface2);border-radius:20px;overflow:hidden;}
+.feat-bar{height:100%;border-radius:20px;}
+.feat-val{font-family:var(--mono);font-size:11px;color:var(--muted);min-width:40px;text-align:right;}
+.analysis-box{background:var(--green-bg);border:1px solid rgba(45,107,74,.2);border-radius:14px;padding:24px;}
+.analysis-box h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--green);margin-bottom:12px;letter-spacing:-.3px;}
+.analysis-box p{font-size:14px;color:#1d4a2f;line-height:1.75;}
+
+@media(max-width:900px){
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .predict-layout{grid-template-columns:1fr;}
+  .models-grid{grid-template-columns:1fr;}
+  .two-col{grid-template-columns:1fr;}
+  nav{padding:0 20px;}
+  .section{padding:32px 20px;}
+  .final-verdict{flex-wrap:wrap;gap:16px;}
+  .fv-right{min-width:unset;width:100%;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Sepsis<span>Guard</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('dataset',this)">Dataset</button>
+    <button class="nav-tab" onclick="showSection('predict',this)">Predict</button>
+    <button class="nav-tab" onclick="showSection('models',this)">Model Results</button>
+  </div>
+  <div class="nav-badge">MIMIC-IV · Phase 1</div>
+</nav>
+
+<!-- ===== DATASET ===== -->
+<div class="section active" id="sec-dataset">
+  <div class="page-title">Dataset Overview</div>
+  <div class="page-sub">MIMIC-IV clinical database — ICU patient records with sepsis labels</div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="s-label">Total Records</div><div class="s-val">135,452</div><div class="s-note">Hourly ICU observations</div></div>
+    <div class="stat-card blue"><div class="s-label">Features</div><div class="s-val">17</div><div class="s-note">10 model features used</div></div>
+    <div class="stat-card amber"><div class="s-label">Sepsis Positive</div><div class="s-val">~24%</div><div class="s-note">ICD-code labelled</div></div>
+    <div class="stat-card green"><div class="s-label">Unique Patients</div><div class="s-val">364K+</div><div class="s-note">MIMIC-IV patients table</div></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Sepsis label distribution</div>
+      <div class="card-sub">Binary label from ICD-9/10 codes</div>
+      <div class="dist-bar-wrap"><div class="dist-bar-label"><span>Non-Sepsis (0)</span><span style="font-family:var(--mono);font-weight:500">~76%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:76%;background:#1a3a2a;"></div></div></div>
+      <div class="dist-bar-wrap" style="margin-top:14px;"><div class="dist-bar-label"><span>Sepsis (1)</span><span style="font-family:var(--mono);font-weight:500;color:var(--amber)">~24%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:24%;background:var(--amber);"></div></div></div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);"><div style="font-size:12px;color:var(--muted);margin-bottom:8px;">MIMIC-IV Source Tables</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">diagnoses_icd</div><div style="color:var(--muted);margin-top:2px;">6,364,488 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">chartevents</div><div style="color:var(--muted);margin-top:2px;">723,238 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">admissions</div><div style="color:var(--muted);margin-top:2px;">546,028 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">icustays</div><div style="color:var(--muted);margin-top:2px;">94,458 rows</div></div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Vital signs extracted</div>
+      <div class="card-sub">ITEMID mapping from chartevents</div>
+      <table class="v-table"><thead><tr><th>Vital Sign</th><th>ITEMID</th><th></th></tr></thead><tbody>
+        <tr><td>Heart Rate</td><td class="itemid">220045</td><td><span class="dot"></span></td></tr>
+        <tr><td>Systolic BP</td><td class="itemid">220179</td><td><span class="dot"></span></td></tr>
+        <tr><td>Diastolic BP</td><td class="itemid">220180</td><td><span class="dot"></span></td></tr>
+        <tr><td>Mean BP</td><td class="itemid">220181</td><td><span class="dot"></span></td></tr>
+        <tr><td>Respiratory Rate</td><td class="itemid">220210</td><td><span class="dot"></span></td></tr>
+        <tr><td>SpO₂</td><td class="itemid">220277</td><td><span class="dot"></span></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Preprocessing pipeline</div>
+      <div class="card-sub">8-step data processing workflow</div>
+      <div class="pipeline-steps">
+        <div class="p-step"><div class="p-num">1</div><div class="p-text">Extract ICU vital signs using ITEMIDs</div></div>
+        <div class="p-step"><div class="p-num">2</div><div class="p-text">Filter records by patient identifiers</div></div>
+        <div class="p-step"><div class="p-num">3</div><div class="p-text">Convert timestamps to datetime format</div></div>
+        <div class="p-step"><div class="p-num">4</div><div class="p-text">Aggregate vitals at hourly intervals</div></div>
+        <div class="p-step"><div class="p-num">5</div><div class="p-text">Forward + backward fill for missing values</div></div>
+        <div class="p-step"><div class="p-num">6</div><div class="p-text">Encode gender: M → 1, F → 0</div></div>
+        <div class="p-step"><div class="p-num">7</div><div class="p-text">Generate sepsis labels from ICD codes</div></div>
+        <div class="p-step"><div class="p-num">8</div><div class="p-text">Merge into unified 135,452-row dataset</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Engineered features</div>
+      <div class="card-sub">Clinical indicators derived from raw vitals</div>
+      <div style="margin-bottom:16px;"><div style="background:var(--surface2);border-radius:10px;padding:16px;"><div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:500;">Shock Index</div><div style="font-family:var(--mono);font-size:14px;">HR / (Systolic BP + 1)</div><div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Values > 1.0 are clinically significant for sepsis risk.</div></div></div>
+      <div><div style="background:var(--surface2);border-radius:10px;padding:16px;"><div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:500;">Pulse Pressure</div><div style="font-family:var(--mono);font-size:14px;">Systolic BP − Diastolic BP</div><div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Abnormal pulse pressure indicates hemodynamic instability.</div></div></div>
+      <div style="margin-top:14px;padding:12px;background:var(--green-bg);border-radius:10px;font-size:12px;color:#1d4a2f;line-height:1.6;"><strong>Train/Test split:</strong> 80/20 stratified. StandardScaler applied before training.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PREDICT ===== -->
+<div class="section" id="sec-predict">
+  <div class="page-title">Sepsis Risk Prediction</div>
+  <div class="page-sub">Single reading, temporal multi-point analysis, or CSV upload</div>
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="switchMode('single',this)">Single Reading</button>
+    <button class="mode-tab" onclick="switchMode('temporal',this)">Temporal (Multi-point)</button>
+    <button class="mode-tab" onclick="switchMode('csv',this)">Upload CSV</button>
+  </div>
+
+  <!-- SINGLE MODE -->
+  <div id="mode-single">
+    <div class="predict-layout">
+      <div class="card">
+        <div class="form-label-group">Vital Signs</div>
+        <div class="field-grid">
+          <div class="field"><label>Heart Rate <span class="unit">bpm</span></label><input type="number" id="s_heart_rate" placeholder="72"/></div>
+          <div class="field"><label>Systolic BP <span class="unit">mmHg</span></label><input type="number" id="s_systolic_bp" placeholder="120"/></div>
+          <div class="field"><label>Diastolic BP <span class="unit">mmHg</span></label><input type="number" id="s_diastolic_bp" placeholder="80"/></div>
+          <div class="field"><label>Mean BP <span class="unit">mmHg</span></label><input type="number" id="s_mean_bp" placeholder="93"/></div>
+          <div class="field"><label>Respiratory Rate <span class="unit">br/min</span></label><input type="number" id="s_respiratory_rate" placeholder="16"/></div>
+          <div class="field"><label>SpO₂ <span class="unit">%</span></label><input type="number" id="s_spo2" placeholder="98"/></div>
+        </div>
+        <div class="form-label-group">Patient Demographics</div>
+        <div class="field-grid">
+          <div class="field"><label>Age <span class="unit">years</span></label><input type="number" id="s_age" placeholder="55"/></div>
+          <div class="field"><label>Gender</label><select id="s_gender"><option value="1">Male</option><option value="0">Female</option></select></div>
+        </div>
+        <button class="btn-predict" onclick="runSingle()">Run Sepsis Analysis →</button>
+        <div class="error-box" id="s_error"></div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:500;">Quick Presets</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="loadPreset('normal')" style="font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;color:var(--text);font-family:'Inter',sans-serif;">Normal</button>
+            <button onclick="loadPreset('moderate')" style="font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid rgba(146,85,10,.3);background:var(--amber-bg);cursor:pointer;color:var(--amber);font-family:'Inter',sans-serif;">Moderate risk</button>
+            <button onclick="loadPreset('high')" style="font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid rgba(139,31,31,.3);background:var(--red-bg);cursor:pointer;color:var(--red);font-family:'Inter',sans-serif;">High risk</button>
+          </div>
+        </div>
+      </div>
+      <div style="position:sticky;top:80px;">
+        <div class="result-placeholder" id="s_placeholder"><div class="ph-icon">🫀</div><p>Enter vitals and run analysis to see risk assessment</p></div>
+        <div class="result-card" id="s_result">
+          <div class="result-header"><div class="risk-badge" id="s_badge"><div class="rb-pct" id="s_pct">—</div><div class="rb-label" id="s_label">—</div></div><div class="result-info"><h3 id="s_title">—</h3><div class="r-verdict" id="s_verdict">—</div></div></div>
+          <div class="result-metrics"><div class="rm-item"><div class="rm-label">Probability</div><div class="rm-val" id="s_prob">—</div></div><div class="rm-item"><div class="rm-label">Prediction</div><div class="rm-val" id="s_pred">—</div></div><div class="rm-item"><div class="rm-label">Shock Index</div><div class="rm-val" id="s_si">—</div></div><div class="rm-item"><div class="rm-label">Pulse Pressure</div><div class="rm-val" id="s_pp">—</div></div></div>
+          <div class="result-alert" id="s_alert"><span class="ra-icon" id="s_icon">ℹ️</span><span id="s_alert_text">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEMPORAL MODE -->
+  <div id="mode-temporal" style="display:none;">
+    <div class="temporal-container">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:600;">Patient readings over time</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">Type directly into the table — press Tab to move between cells. Add rows as needed.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-family:var(--mono);font-size:12px;color:var(--green);background:var(--green-bg);padding:5px 12px;border-radius:8px;" id="t_count">0 readings</span>
+        </div>
+      </div>
+
+      <!-- PRESET BUTTONS FOR TEMPORAL -->
+      <div style="margin-bottom:18px;padding:14px 16px;background:var(--surface2);border-radius:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span style="font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Load scenario:</span>
+        <button onclick="loadTemporalPreset('normal')" style="font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text);font-family:'Inter',sans-serif;font-weight:500;transition:all .15s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='var(--surface)'">🟢 Normal — Stable patient</button>
+        <button onclick="loadTemporalPreset('moderate')" style="font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid rgba(146,85,10,.3);background:var(--amber-bg);cursor:pointer;color:var(--amber);font-family:'Inter',sans-serif;font-weight:500;transition:all .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">🟡 Moderate — Deteriorating</button>
+        <button onclick="loadTemporalPreset('high')" style="font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid rgba(139,31,31,.3);background:var(--red-bg);cursor:pointer;color:var(--red);font-family:'Inter',sans-serif;font-weight:500;transition:all .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">🔴 High Risk — Critical escalation</button>
+      </div>
+
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:12px;">
+        <table id="t_input_table" style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">
+          <thead>
+            <tr style="background:var(--surface2);">
+              <th style="padding:10px 12px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;width:90px;border-bottom:1px solid var(--border);">Time</th>
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);">HR <span style="font-family:var(--mono);font-size:9px;font-weight:400;text-transform:none;">bpm</span></th>
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);">Sys BP <span style="font-family:var(--mono);font-size:9px;font-weight:400;text-transform:none;">mmHg</span></th>
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);">Dia BP</th>
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);">Mean BP</th>
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);">RR <span style="font-family:var(--mono);font-size:9px;font-weight:400;text-transform:none;">br/m</span></th>
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);">SpO₂ <span style="font-family:var(--mono);font-size:9px;font-weight:400;text-transform:none;">%</span></th>
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;width:60px;border-bottom:1px solid var(--border);">Age</th>
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;width:52px;border-bottom:1px solid var(--border);">Sex</th>
+              <th style="padding:10px 8px;width:36px;border-bottom:1px solid var(--border);"></th>
+            </tr>
+          </thead>
+          <tbody id="t_input_tbody"></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+        <button onclick="addTableRow()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:none;border:1px dashed var(--border);border-radius:8px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">
+          + Add row
+        </button>
+        <div style="display:flex;gap:8px;">
+          <button onclick="clearReadings()" style="padding:10px 16px;background:none;border:1px solid var(--border);border-radius:10px;font-size:13px;cursor:pointer;color:var(--muted);font-family:'Inter',sans-serif;">Clear</button>
+          <button id="t_analyse_btn" onclick="runTemporal()" disabled style="padding:10px 20px;background:var(--accent);border:none;border-radius:10px;color:white;font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;opacity:.4;transition:all .2s;">Analyse →</button>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;padding:10px 14px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);">
+        💡 Tip: Tab through cells to fill quickly. Age and gender only need to be set once (first row) — they'll auto-fill for new rows.
+      </div>
+    </div>
+
+    <div class="temporal-result" id="t_result">
+      <!-- FINAL VERDICT -->
+      <div id="t_final_verdict" class="final-verdict low"></div>
+
+      <!-- STATS ROW -->
+      <div style="display:flex;gap:12px;margin-bottom:20px;">
+        <div class="t-stat" id="t_peak_stat" style="flex:1;"><div class="ts-val" id="t_peak_val">—</div><div class="ts-label">Peak risk</div></div>
+        <div class="t-stat" style="flex:1;"><div class="ts-val" id="t_avg_val">—</div><div class="ts-label">Average risk</div></div>
+        <div class="t-stat" id="t_trend_stat" style="flex:1;"><div class="ts-val" id="t_trend_val">—</div><div class="ts-label">Trend</div></div>
+        <div class="t-stat" style="flex:1;"><div class="ts-val" id="t_sepsis_count">—</div><div class="ts-label">Sepsis readings</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div style="position:relative;width:100%;height:260px;">
+          <canvas id="t_chart" role="img" aria-label="Line chart showing sepsis risk over time">Temporal risk chart</canvas>
+        </div>
+      </div>
+
+      <div class="pred-table-wrap">
+        <table class="pred-table">
+          <thead><tr><th>Time</th><th>HR</th><th>Sys BP</th><th>SpO₂</th><th>Shock Index</th><th>Probability</th><th>Risk</th></tr></thead>
+          <tbody id="t_pred_tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSV MODE -->
+  <div id="mode-csv" style="display:none;">
+    <div class="csv-upload-area" id="csv_drop" onclick="document.getElementById('csv-file-input').click()" ondragover="csvDragOver(event)" ondragleave="csvDragLeave(event)" ondrop="csvDrop(event)">
+      <div class="up-icon">📂</div>
+      <h3>Drop CSV file here or click to upload</h3>
+      <p>CSV should have one row per time reading for a single patient<br/>Required columns: heart_rate, systolic_bp, diastolic_bp, mean_bp, respiratory_rate, spo2, age, gender</p>
+      <span class="csv-template" onclick="event.stopPropagation();downloadTemplate()">Download CSV template</span>
+    </div>
+    <input type="file" id="csv-file-input" accept=".csv" onchange="handleCSV(this.files[0])"/>
+
+    <div class="temporal-result" id="csv_result">
+      <!-- FINAL VERDICT for CSV -->
+      <div id="csv_final_verdict" class="final-verdict low" style="margin-bottom:20px;"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:-.3px;" id="csv_filename">Results</div>
+        <div style="display:flex;gap:12px;">
+          <div class="t-stat" id="csv_peak_stat"><div class="ts-val" id="csv_peak_val">—</div><div class="ts-label">Peak risk</div></div>
+          <div class="t-stat" id="csv_avg_stat"><div class="ts-val" id="csv_avg_val">—</div><div class="ts-label">Avg risk</div></div>
+          <div class="t-stat"><div class="ts-val" id="csv_rows_val">—</div><div class="ts-label">Readings</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="position:relative;width:100%;height:280px;"><canvas id="csv_chart" role="img" aria-label="Line chart of sepsis risk from CSV data">CSV risk chart</canvas></div>
+      </div>
+      <div class="pred-table-wrap">
+        <table class="pred-table">
+          <thead><tr><th>#</th><th>HR</th><th>Sys BP</th><th>SpO₂</th><th>Shock Index</th><th>Probability</th><th>Risk</th></tr></thead>
+          <tbody id="csv_tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODELS ===== -->
+<div class="section" id="sec-models">
+  <div class="page-title">Model Performance</div>
+  <div class="page-sub">Comparative evaluation of 3 ML models on the MIMIC-IV sepsis dataset</div>
+  <div class="models-grid">
+    <div class="model-card">
+      <div class="model-header"><div class="model-tag">Baseline</div><div class="model-name">Logistic Regression</div></div>
+      <div class="model-metrics">
+        <div class="metric-row"><span class="metric-name">Accuracy</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:61%;background:#888;"></div></div><span class="metric-val">61%</span></div>
+        <div class="metric-row"><span class="metric-name">Precision</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:42%;background:#888;"></div></div><span class="metric-val">42%</span></div>
+        <div class="metric-row"><span class="metric-name">Recall</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:63%;background:#888;"></div></div><span class="metric-val">63%</span></div>
+        <div class="metric-row"><span class="metric-name">F1-score</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:50%;background:#888;"></div></div><span class="metric-val">50%</span></div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Linear model; limited in capturing nonlinear physiological patterns.</div>
+      </div>
+    </div>
+    <div class="model-card">
+      <div class="model-header"><div class="model-tag">Ensemble</div><div class="model-name">Random Forest</div></div>
+      <div class="model-metrics">
+        <div class="metric-row"><span class="metric-name">Accuracy</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:90%;background:#1a3a6b;"></div></div><span class="metric-val">90%</span></div>
+        <div class="metric-row"><span class="metric-name">Precision</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:92%;background:#1a3a6b;"></div></div><span class="metric-val" style="color:var(--blue);">92%</span></div>
+        <div class="metric-row"><span class="metric-name">Recall</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:73%;background:#1a3a6b;"></div></div><span class="metric-val">73%</span></div>
+        <div class="metric-row"><span class="metric-name">F1-score</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:82%;background:#1a3a6b;"></div></div><span class="metric-val">82%</span></div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Highest precision (92%) — very reliable when it predicts sepsis. Lower recall misses some cases.</div>
+      </div>
+    </div>
+    <div class="model-card best">
+      <div class="model-header"><div class="model-tag">Boosting · Tuned</div><div class="model-name">XGBoost</div><div class="model-best-badge">★ Best for clinical use</div></div>
+      <div class="model-metrics">
+        <div class="metric-row"><span class="metric-name">Accuracy</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:90%;background:var(--green);"></div></div><span class="metric-val">90%</span></div>
+        <div class="metric-row"><span class="metric-name">Precision</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:80%;background:var(--green);"></div></div><span class="metric-val">80%</span></div>
+        <div class="metric-row"><span class="metric-name">Recall</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:90%;background:var(--green);"></div></div><span class="metric-val" style="color:var(--green);font-weight:600;">90%</span></div>
+        <div class="metric-row"><span class="metric-name">F1-score</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:84%;background:var(--green);"></div></div><span class="metric-val" style="color:var(--green);font-weight:600;">84%</span></div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:#1d4a2f;line-height:1.6;background:var(--green-bg);padding:10px 12px;border-radius:8px;">Highest recall (90%) — catches the most sepsis cases. Critical for clinical use.</div>
+      </div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Model comparison — all metrics</div>
+      <div class="card-sub">Logistic Regression vs Random Forest vs XGBoost</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;font-size:12px;color:var(--muted);">
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#888;display:inline-block;"></span>Logistic Regression</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#1a3a6b;display:inline-block;"></span>Random Forest</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#2d6b4a;display:inline-block;"></span>XGBoost</span>
+      </div>
+      <div style="position:relative;width:100%;height:260px;"><canvas id="compChart" role="img" aria-label="Grouped bar chart comparing accuracy, precision, recall and F1 for three models">Model comparison</canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">XGBoost feature importance</div>
+      <div class="card-sub">Relative contribution of each feature</div>
+      <div class="feature-list">
+        <div class="feat-row"><span class="feat-name">Age</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:100%;background:var(--green);"></div></div><span class="feat-val">0.220</span></div>
+        <div class="feat-row"><span class="feat-name">Gender</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:68%;background:var(--green);opacity:.85;"></div></div><span class="feat-val">0.150</span></div>
+        <div class="feat-row"><span class="feat-name">Diastolic BP</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:43%;background:var(--blue);"></div></div><span class="feat-val">0.094</span></div>
+        <div class="feat-row"><span class="feat-name">Shock Index</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:41%;background:var(--blue);opacity:.85;"></div></div><span class="feat-val">0.091</span></div>
+        <div class="feat-row"><span class="feat-name">Pulse Pressure</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:40%;background:var(--blue);opacity:.7;"></div></div><span class="feat-val">0.087</span></div>
+        <div class="feat-row"><span class="feat-name">Mean BP</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:37%;background:var(--blue);opacity:.6;"></div></div><span class="feat-val">0.081</span></div>
+        <div class="feat-row"><span class="feat-name">Systolic BP</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:35%;background:var(--blue);opacity:.5;"></div></div><span class="feat-val">0.077</span></div>
+        <div class="feat-row"><span class="feat-name">SpO₂</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:32%;background:#888;"></div></div><span class="feat-val">0.070</span></div>
+        <div class="feat-row"><span class="feat-name">Resp. Rate</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:30%;background:#888;opacity:.8;"></div></div><span class="feat-val">0.067</span></div>
+        <div class="feat-row"><span class="feat-name">Heart Rate</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:29%;background:#888;opacity:.6;"></div></div><span class="feat-val">0.064</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="analysis-box">
+    <h3>Why XGBoost is the chosen model</h3>
+    <p>In clinical sepsis detection, recall is more important than precision — a missed case is far more dangerous than a false alarm. XGBoost achieves 90% recall while matching Random Forest's accuracy (90%), dramatically outperforming it on recall (90% vs 73%). The tuned model with <em>scale_pos_weight=2.5</em> handles class imbalance effectively, making it the most clinically appropriate model in this study.</p>
+  </div>
+</div>
+
+<script>
+// ===== NAV =====
+function showSection(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'models') initCompChart();
+}
+
+// ===== MODE SWITCH =====
+function switchMode(mode, btn) {
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mode-single').style.display = mode === 'single' ? '' : 'none';
+  document.getElementById('mode-temporal').style.display = mode === 'temporal' ? '' : 'none';
+  document.getElementById('mode-csv').style.display = mode === 'csv' ? '' : 'none';
+}
+
+// ===== PRESETS =====
+const presets = {
+  normal:   {hr:78,  sbp:122, dbp:74, mbp:90,  rr:16, spo2:98, age:48, gender:0},
+  moderate: {hr:92,  sbp:108, dbp:65, mbp:79,  rr:20, spo2:96, age:67, gender:1},
+  high:     {hr:106, sbp:96,  dbp:58, mbp:71,  rr:24, spo2:94, age:76, gender:1}
+};
+
+function loadPreset(type) {
+  const p = presets[type];
+  document.getElementById('s_heart_rate').value = p.hr;
+  document.getElementById('s_systolic_bp').value = p.sbp;
+  document.getElementById('s_diastolic_bp').value = p.dbp;
+  document.getElementById('s_mean_bp').value = p.mbp;
+  document.getElementById('s_respiratory_rate').value = p.rr;
+  document.getElementById('s_spo2').value = p.spo2;
+  document.getElementById('s_age').value = p.age;
+  document.getElementById('s_gender').value = p.gender;
+}
+
+// Temporal presets — multi-point scenarios showing progression
+const temporalPresets = {
+  normal: [
+    {time:'08:00', hr:72,  sbp:122, dbp:76, mbp:91,  rr:15, spo2:99, age:52, gender:'0'},
+    {time:'10:00', hr:74,  sbp:120, dbp:74, mbp:89,  rr:15, spo2:98, age:52, gender:'0'},
+    {time:'12:00', hr:76,  sbp:118, dbp:73, mbp:88,  rr:16, spo2:98, age:52, gender:'0'},
+    {time:'14:00', hr:75,  sbp:121, dbp:75, mbp:90,  rr:15, spo2:99, age:52, gender:'0'},
+    {time:'16:00', hr:73,  sbp:123, dbp:77, mbp:92,  rr:14, spo2:99, age:52, gender:'0'},
+  ],
+  moderate: [
+    {time:'08:00', hr:80,  sbp:118, dbp:72, mbp:87,  rr:17, spo2:97, age:66, gender:'1'},
+    {time:'10:00', hr:86,  sbp:113, dbp:68, mbp:83,  rr:19, spo2:96, age:66, gender:'1'},
+    {time:'12:00', hr:91,  sbp:108, dbp:65, mbp:79,  rr:21, spo2:95, age:66, gender:'1'},
+    {time:'14:00', hr:95,  sbp:103, dbp:62, mbp:76,  rr:22, spo2:95, age:66, gender:'1'},
+    {time:'16:00', hr:99,  sbp:99,  dbp:60, mbp:73,  rr:23, spo2:94, age:66, gender:'1'},
+  ],
+  high: [
+    {time:'08:00', hr:88,  sbp:110, dbp:68, mbp:82,  rr:19, spo2:96, age:74, gender:'1'},
+    {time:'10:00', hr:98,  sbp:102, dbp:62, mbp:75,  rr:22, spo2:94, age:74, gender:'1'},
+    {time:'12:00', hr:108, sbp:94,  dbp:58, mbp:70,  rr:25, spo2:93, age:74, gender:'1'},
+    {time:'14:00', hr:116, sbp:88,  dbp:54, mbp:65,  rr:27, spo2:92, age:74, gender:'1'},
+    {time:'16:00', hr:122, sbp:82,  dbp:50, mbp:61,  rr:29, spo2:91, age:74, gender:'1'},
+  ]
+};
+
+function loadTemporalPreset(type) {
+  // Clear existing rows
+  document.getElementById('t_input_tbody').innerHTML = '';
+  rowCount = 0;
+  document.getElementById('t_result').style.display = 'none';
+
+  const rows = temporalPresets[type];
+  rows.forEach(r => addTableRow(r));
+  updateCount();
+
+  // Auto-run after a short delay
+  setTimeout(() => runTemporal(true), 200);
+}
+
+// ===== SINGLE PREDICT =====
+async function runSingle() {
+  const ids = ['s_heart_rate','s_systolic_bp','s_diastolic_bp','s_mean_bp','s_respiratory_rate','s_spo2','s_age'];
+  const payload = {};
+  for (const id of ids) {
+    const v = document.getElementById(id).value;
+    if (v === '' || isNaN(parseFloat(v))) { showErr('s_error','Please fill in: ' + id.replace('s_','').replace(/_/g,' ')); return; }
+    payload[id.replace('s_','')] = parseFloat(v);
+  }
+  payload.gender = parseInt(document.getElementById('s_gender').value);
+  const btn = document.querySelector('#mode-single .btn-predict');
+  btn.textContent = 'Analysing...'; btn.classList.add('loading');
+  hideErr('s_error');
+  try {
+    const res = await fetch('/predict', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    renderSingleResult(data.result, payload);
+  } catch(e) { showErr('s_error','Prediction failed: ' + e.message); }
+  finally { btn.textContent = 'Run Sepsis Analysis →'; btn.classList.remove('loading'); }
+}
+
+function renderSingleResult(r, inputs) {
+  document.getElementById('s_placeholder').style.display = 'none';
+  const card = document.getElementById('s_result');
+  card.style.display = 'block';
+  const level = r.risk_level.toLowerCase();
+  document.getElementById('s_pct').textContent = r.probability_percent.toFixed(1) + '%';
+  document.getElementById('s_label').textContent = r.risk_level + ' Risk';
+  document.getElementById('s_badge').className = 'risk-badge ' + level;
+  const titles = {low:'Low Sepsis Risk',moderate:'Moderate Risk',high:'High Sepsis Risk'};
+  document.getElementById('s_title').textContent = titles[level];
+  document.getElementById('s_prob').textContent = r.probability.toFixed(4);
+  document.getElementById('s_pred').textContent = r.prediction === 1 ? 'Sepsis' : 'No Sepsis';
+  document.getElementById('s_si').textContent = (inputs.heart_rate / (inputs.systolic_bp + 1)).toFixed(3);
+  document.getElementById('s_pp').textContent = (inputs.systolic_bp - inputs.diastolic_bp).toFixed(0) + ' mmHg';
+  const verdicts = {low:'Vital signs are within acceptable ranges.',moderate:'Some indicators suggest elevated risk. Clinical reassessment recommended.',high:'Critical risk detected. Immediate clinical evaluation required.'};
+  document.getElementById('s_verdict').textContent = verdicts[level];
+  const msgs = {low:'Patient appears stable. Maintain monitoring and document baseline vitals.',moderate:'Recommend reassessment within 2 hours. Check lactate, CBC, blood cultures.',high:'SEPSIS ALERT: Initiate Hour-1 Bundle. Blood cultures ×2, IV fluids 30 mL/kg, broad-spectrum antibiotics, lactate.'};
+  const icons = {low:'✅',moderate:'⚠️',high:'🚨'};
+  const alertEl = document.getElementById('s_alert');
+  alertEl.className = 'result-alert ' + level;
+  document.getElementById('s_icon').textContent = icons[level];
+  document.getElementById('s_alert_text').textContent = msgs[level];
+}
+
+// ===== BUILD FINAL VERDICT HTML =====
+function buildFinalVerdict(preds) {
+  const probs = preds.map(p => p.probability_percent);
+  const peak  = Math.max(...probs);
+  const avg   = probs.reduce((a,b) => a+b, 0) / probs.length;
+  const rising = probs[probs.length-1] > probs[0];
+  const sepsisCount = preds.filter(p => p.risk_level === 'High').length;
+
+  // Determine overall level: use peak as primary signal, weight trend
+  let level;
+  if (peak >= 65 || (peak >= 50 && rising)) level = 'high';
+  else if (peak >= 35 || avg >= 28) level = 'moderate';
+  else level = 'low';
+
+  const configs = {
+    low: {
+      icon: '✅',
+      sub: 'Overall Assessment',
+      title: 'Low Sepsis Risk — Patient Stable',
+      desc: 'Vital signs across all time points remain within acceptable clinical ranges. No significant deterioration observed.',
+      actions: 'Continue routine monitoring every 4–6 hours. Reassess if vitals change or symptoms develop.'
+    },
+    moderate: {
+      icon: '⚠️',
+      sub: 'Overall Assessment',
+      title: 'Moderate Risk — Clinical Attention Required',
+      desc: 'One or more readings show elevated sepsis probability' + (rising ? ', with a worsening trend over time.' : '. Trend is not yet clearly escalating, but warrants close observation.'),
+      actions: 'Reassess within 2 hours. Order: lactate, CBC, CMP, blood cultures ×2. Ensure IV access.'
+    },
+    high: {
+      icon: '🚨',
+      sub: 'URGENT — Overall Assessment',
+      title: 'High Sepsis Risk — Immediate Action',
+      desc: 'Multiple readings indicate critical sepsis probability' + (rising ? ', with a rapidly escalating trend.' : '. Peak risk is critically high.') + ' Immediate intervention is warranted.',
+      actions: 'INITIATE HOUR-1 BUNDLE: Blood cultures ×2 → IV antibiotics (broad-spectrum) → IV fluids 30 mL/kg → Measure lactate → Vasopressors if MAP < 65 mmHg'
+    }
+  };
+
+  const c = configs[level];
+  return { level, html: `
+    <div class="fv-icon">${c.icon}</div>
+    <div class="fv-body">
+      <div class="fv-sub">${c.sub}</div>
+      <div class="fv-title">${c.title}</div>
+      <div class="fv-desc">${c.desc}</div>
+      <div class="fv-actions">${c.actions}</div>
+      <div class="fv-stats" style="margin-top:14px;">
+        <div class="fv-stat ${level === 'high' ? 'danger' : level === 'moderate' ? 'warn' : 'safe'}">
+          <div class="fvs-val">${peak.toFixed(1)}%</div><div class="fvs-label">Peak Risk</div>
+        </div>
+        <div class="fv-stat">
+          <div class="fvs-val">${avg.toFixed(1)}%</div><div class="fvs-label">Avg Risk</div>
+        </div>
+        <div class="fv-stat ${rising ? 'danger' : 'safe'}">
+          <div class="fvs-val">${rising ? '↑ Rising' : '↓ Falling'}</div><div class="fvs-label">Trend</div>
+        </div>
+        <div class="fv-stat ${sepsisCount > 0 ? 'danger' : 'safe'}">
+          <div class="fvs-val">${sepsisCount}/${preds.length}</div><div class="fvs-label">High-risk pts</div>
+        </div>
+      </div>
+    </div>
+    <div class="fv-right">
+      <div class="fv-pct">${peak.toFixed(0)}%</div>
+      <div class="fv-pct-label">Peak probability</div>
+    </div>
+  `};
+}
+
+// ===== TEMPORAL TABLE =====
+let tChart = null;
+let rowCount = 0;
+let autoUpdateTimer = null;
+
+function cellStyle(type) {
+  const base = 'width:100%;border:none;outline:none;background:transparent;font-family:\'JetBrains Mono\',monospace;font-size:12px;color:var(--text);padding:2px 4px;';
+  return type === 'select' ? base + 'cursor:pointer;' : base;
+}
+
+function addTableRow(defaults) {
+  rowCount++;
+  const n = rowCount;
+  const d = defaults || {};
+  const tbody = document.getElementById('t_input_tbody');
+  const tr = document.createElement('tr');
+  tr.id = 'trow_' + n;
+  tr.style.cssText = 'border-bottom:1px solid var(--border);transition:background .1s;';
+  tr.onmouseover = () => tr.style.background = 'var(--surface2)';
+  tr.onmouseout  = () => tr.style.background = '';
+
+  const prevRow = tbody.lastElementChild;
+  const prevAge    = prevRow ? prevRow.querySelector('[data-field="age"]').value : '';
+  const prevGender = prevRow ? prevRow.querySelector('[data-field="gender"]').value : '1';
+
+  tr.innerHTML = `
+    <td style="padding:6px 12px;"><input data-field="time" type="text" value="${d.time||('Hour '+n)}" style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="hr"   type="number" placeholder="72"  value="${d.hr||''}"   style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="sbp"  type="number" placeholder="120" value="${d.sbp||''}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="dbp"  type="number" placeholder="80"  value="${d.dbp||''}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="mbp"  type="number" placeholder="93"  value="${d.mbp||''}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="rr"   type="number" placeholder="16"  value="${d.rr||''}"   style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="spo2" type="number" placeholder="98"  value="${d.spo2||''}" style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="age"  type="number" placeholder="55"  value="${d.age||prevAge}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;">
+      <select data-field="gender" style="${cellStyle('select')}" onchange="scheduleAutoUpdate()">
+        <option value="1" ${(d.gender==='1'||(!d.gender&&prevGender==='1'))?'selected':''}>M</option>
+        <option value="0" ${(d.gender==='0'||(!d.gender&&prevGender==='0'))?'selected':''}>F</option>
+      </select>
+    </td>
+    <td style="padding:6px 8px;text-align:center;">
+      <button onclick="removeRow('trow_${n}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:2px 4px;border-radius:4px;line-height:1;" onmouseover="this.style.color='var(--red)';" onmouseout="this.style.color='var(--muted)';">✕</button>
+    </td>`;
+  tbody.appendChild(tr);
+  if (!defaults) tr.querySelector('[data-field="hr"]').focus();
+  updateCount();
+}
+
+function removeRow(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+  updateCount();
+  scheduleAutoUpdate();
+}
+
+function updateCount() {
+  const rows  = getValidRows();
+  const total = document.getElementById('t_input_tbody').querySelectorAll('tr').length;
+  const countEl = document.getElementById('t_count');
+  countEl.textContent = total + ' row' + (total!==1?'s':'') + (rows.length < total ? ` (${rows.length} complete)` : '');
+  const btn = document.getElementById('t_analyse_btn');
+  btn.disabled = rows.length < 2;
+  btn.style.opacity  = rows.length < 2 ? '.4' : '1';
+  btn.style.cursor   = rows.length < 2 ? 'not-allowed' : 'pointer';
+}
+
+function getValidRows() {
+  const rows = [];
+  document.getElementById('t_input_tbody').querySelectorAll('tr').forEach(tr => {
+    const get  = f => tr.querySelector(`[data-field="${f}"]`).value;
+    const vals = ['hr','sbp','dbp','mbp','rr','spo2','age'].map(f => parseFloat(get(f)));
+    if (vals.every(v => !isNaN(v) && v > 0)) {
+      rows.push({ time:get('time'), hr:vals[0], sbp:vals[1], dbp:vals[2],
+                  mbp:vals[3], rr:vals[4], spo2:vals[5], age:vals[6],
+                  gender:parseInt(get('gender')) });
+    }
+  });
+  return rows;
+}
+
+function scheduleAutoUpdate() {
+  updateCount();
+  clearTimeout(autoUpdateTimer);
+  const rows = getValidRows();
+  if (rows.length < 2) return;
+  document.getElementById('t_count').textContent += ' — updating...';
+  autoUpdateTimer = setTimeout(() => runTemporal(true), 800);
+}
+
+function clearReadings() {
+  document.getElementById('t_input_tbody').innerHTML = '';
+  rowCount = 0;
+  updateCount();
+  document.getElementById('t_result').style.display = 'none';
+  addTableRow(); addTableRow(); addTableRow();
+}
+
+async function runTemporal(silent) {
+  const readings = getValidRows();
+  if (readings.length < 2) { if (!silent) alert('Please fill at least 2 complete rows.'); return; }
+  const btn = document.getElementById('t_analyse_btn');
+  btn.textContent = 'Analysing...'; btn.disabled = true;
+  try {
+    const results = await Promise.all(readings.map(r =>
+      fetch('/predict', {method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({heart_rate:r.hr,systolic_bp:r.sbp,diastolic_bp:r.dbp,mean_bp:r.mbp,respiratory_rate:r.rr,spo2:r.spo2,age:r.age,gender:r.gender})
+      }).then(res => res.json())
+    ));
+    const preds = results.map((d, i) => ({...readings[i], ...d.result}));
+    renderTemporalResult(preds, 't');
+  } catch(e) { if (!silent) alert('Error: ' + e.message); }
+  finally { btn.textContent = 'Analyse →'; btn.disabled = false; }
+}
+
+function renderTemporalResult(preds, prefix) {
+  const resultEl = document.getElementById(prefix + '_result');
+  resultEl.style.display = 'block';
+
+  const probs = preds.map(p => p.probability_percent);
+  const peak  = Math.max(...probs);
+  const avg   = probs.reduce((a,b) => a+b, 0) / probs.length;
+  const rising = probs[probs.length-1] > probs[0];
+  const sepsisCount = preds.filter(p => p.risk_level === 'High').length;
+
+  // ---- FINAL VERDICT ----
+  const verdict = buildFinalVerdict(preds);
+  const verdictEl = document.getElementById(prefix + '_final_verdict');
+  verdictEl.className = 'final-verdict ' + verdict.level;
+  verdictEl.innerHTML = verdict.html;
+
+  // ---- STATS (for temporal only — csv uses its own stat els) ----
+  const peakEl = document.getElementById(prefix + '_peak_val');
+  const avgEl  = document.getElementById(prefix + '_avg_val');
+  if (peakEl) peakEl.textContent = peak.toFixed(1) + '%';
+  if (avgEl)  avgEl.textContent  = avg.toFixed(1) + '%';
+
+  const peakStat = document.getElementById(prefix + '_peak_stat');
+  if (peakStat) peakStat.className = 't-stat ' + (peak >= 65 ? 'danger' : peak >= 35 ? 'warn' : 'safe');
+
+  if (prefix === 't') {
+    document.getElementById('t_trend_val').textContent = rising ? '↑ Rising' : '↓ Falling';
+    document.getElementById('t_trend_stat').className = 't-stat ' + (rising ? 'danger' : 'safe');
+    document.getElementById('t_sepsis_count').textContent = sepsisCount + '/' + preds.length;
+  } else {
+    document.getElementById('csv_rows_val').textContent = preds.length;
+  }
+
+  // ---- CHART ----
+  const labels = preds.map(p => p.time || ('#' + (preds.indexOf(p)+1)));
+  const data   = preds.map(p => parseFloat(p.probability_percent.toFixed(1)));
+  const colors = preds.map(p => p.risk_level === 'High' ? '#8b1f1f' : p.risk_level === 'Moderate' ? '#92550a' : '#2d6b4a');
+
+  const canvasId = prefix + '_chart';
+  if (prefix === 't' && tChart) { tChart.destroy(); }
+  const ctx = document.getElementById(canvasId);
+  const chartObj = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Sepsis Risk %',
+        data,
+        borderColor: '#1a3a2a',
+        backgroundColor: 'rgba(26,58,42,0.06)',
+        borderWidth: 2,
+        pointBackgroundColor: colors,
+        pointBorderColor: colors,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.parsed.y.toFixed(1) + '% risk' } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } },
+        y: { min: 0, max: 100, grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { callback: v => v + '%', font: { size: 11 } } }
+      }
+    }
+  });
+  if (prefix === 't') tChart = chartObj;
+
+  // ---- TABLE ----
+  const tbody = document.getElementById(prefix === 't' ? 't_pred_tbody' : 'csv_tbody');
+  tbody.innerHTML = preds.map((p, i) => {
+    const si    = (p.hr / (p.sbp + 1)).toFixed(3);
+    const level = p.risk_level.toLowerCase();
+    return `<tr>
+      <td>${p.time || (i+1)}</td><td>${p.hr}</td><td>${p.sbp}</td><td>${p.spo2}</td>
+      <td>${si}</td><td>${p.probability.toFixed(4)}</td>
+      <td><span class="risk-pill ${level}">${p.risk_level}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Scroll to result
+  resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ===== CSV =====
+function csvDragOver(e) { e.preventDefault(); document.getElementById('csv_drop').classList.add('dragover'); }
+function csvDragLeave() { document.getElementById('csv_drop').classList.remove('dragover'); }
+function csvDrop(e) { e.preventDefault(); csvDragLeave(); handleCSV(e.dataTransfer.files[0]); }
+
+function handleCSV(file) {
+  if (!file) return;
+  document.getElementById('csv_filename').textContent = file.name;
+  Papa.parse(file, {
+    header: true, skipEmptyLines: true,
+    complete: async (res) => {
+      const rows = res.data;
+      if (!rows.length) { alert('CSV is empty.'); return; }
+      const required = ['heart_rate','systolic_bp','diastolic_bp','mean_bp','respiratory_rate','spo2','age','gender'];
+      const missing = required.filter(c => !(c in rows[0]));
+      if (missing.length) { alert('Missing columns: ' + missing.join(', ')); return; }
+
+      try {
+        const results = await Promise.all(rows.map(row =>
+          fetch('/predict', {method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              heart_rate: parseFloat(row.heart_rate), systolic_bp: parseFloat(row.systolic_bp),
+              diastolic_bp: parseFloat(row.diastolic_bp), mean_bp: parseFloat(row.mean_bp),
+              respiratory_rate: parseFloat(row.respiratory_rate), spo2: parseFloat(row.spo2),
+              age: parseFloat(row.age), gender: parseInt(row.gender)
+            })
+          }).then(r => r.json())
+        ));
+        const preds = results.map((d, i) => ({
+          time: rows[i].time || rows[i].charttime || rows[i].timestamp || (i+1),
+          hr: parseFloat(rows[i].heart_rate), sbp: parseFloat(rows[i].systolic_bp),
+          spo2: parseFloat(rows[i].spo2), ...d.result
+        }));
+        renderTemporalResult(preds, 'csv');
+      } catch(e) { alert('Prediction error: ' + e.message); }
+    }
+  });
+}
+
+function downloadTemplate() {
+  const header = 'time,heart_rate,systolic_bp,diastolic_bp,mean_bp,respiratory_rate,spo2,age,gender';
+  const rows = [
+    'Hour 1,72,120,80,93,16,98,55,1',
+    'Hour 2,80,115,75,88,18,97,55,1',
+    'Hour 3,92,105,68,80,20,95,55,1'
+  ];
+  const blob = new Blob([header + '\n' + rows.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'sepsis_template.csv'; a.click();
+}
+
+// ===== MODELS CHART =====
+let compChartObj = null;
+function initCompChart() {
+  if (compChartObj) return;
+  const ctx = document.getElementById('compChart');
+  if (!ctx) return;
+  compChartObj = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Accuracy','Precision','Recall','F1-score'],
+      datasets: [
+        {label:'Logistic Regression', data:[61,42,63,50], backgroundColor:'#888780', borderRadius:4},
+        {label:'Random Forest',       data:[90,92,73,82], backgroundColor:'#1a3a6b', borderRadius:4},
+        {label:'XGBoost',             data:[90,80,90,84], backgroundColor:'#2d6b4a', borderRadius:4}
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{grid:{display:false}, ticks:{font:{family:'Inter',size:12}}},
+        y:{min:0,max:100, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{callback:v=>v+'%',font:{size:11}}}
+      }
+    }
+  });
+}
+
+function showErr(id, msg) { const el = document.getElementById(id); el.textContent = msg; el.style.display = 'block'; }
+function hideErr(id) { document.getElementById(id).style.display = 'none'; }
+
+// init 3 empty rows on load
+addTableRow(); addTableRow(); addTableRow();
+</script>
+</body>
+</html>

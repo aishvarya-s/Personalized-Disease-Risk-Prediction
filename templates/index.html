@@ -125,7 +125,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
 /* TEMPORAL + CSV RESULT */
 .temporal-result{display:none;margin-top:24px;animation:fadeIn .35s ease;}
 
-/* ===== FINAL VERDICT BOX (shared for temporal + csv) ===== */
+/* ===== FINAL VERDICT BOX ===== */
 .final-verdict{border-radius:16px;padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;gap:28px;animation:fadeIn .4s ease;}
 .final-verdict.low{background:var(--green-bg);border:2px solid rgba(45,107,74,.25);}
 .final-verdict.moderate{background:var(--amber-bg);border:2px solid rgba(146,85,10,.25);}
@@ -228,15 +228,15 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
   <div class="stat-grid">
     <div class="stat-card"><div class="s-label">Total Records</div><div class="s-val">135,452</div><div class="s-note">Hourly ICU observations</div></div>
     <div class="stat-card blue"><div class="s-label">Features</div><div class="s-val">17</div><div class="s-note">10 model features used</div></div>
-    <div class="stat-card amber"><div class="s-label">Sepsis Positive</div><div class="s-val">~24%</div><div class="s-note">ICD-code labelled</div></div>
+    <div class="stat-card amber"><div class="s-label">Sepsis Positive</div><div class="s-val">24%</div><div class="s-note">approx. · ICD-code labelled</div></div>
     <div class="stat-card green"><div class="s-label">Unique Patients</div><div class="s-val">364K+</div><div class="s-note">MIMIC-IV patients table</div></div>
   </div>
   <div class="two-col">
     <div class="card">
       <div class="card-title">Sepsis label distribution</div>
       <div class="card-sub">Binary label from ICD-9/10 codes</div>
-      <div class="dist-bar-wrap"><div class="dist-bar-label"><span>Non-Sepsis (0)</span><span style="font-family:var(--mono);font-weight:500">~76%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:76%;background:#1a3a2a;"></div></div></div>
-      <div class="dist-bar-wrap" style="margin-top:14px;"><div class="dist-bar-label"><span>Sepsis (1)</span><span style="font-family:var(--mono);font-weight:500;color:var(--amber)">~24%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:24%;background:var(--amber);"></div></div></div>
+      <div class="dist-bar-wrap"><div class="dist-bar-label"><span>Non-Sepsis (0)</span><span style="font-family:var(--mono);font-weight:500">76%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:76%;background:#1a3a2a;"></div></div></div>
+      <div class="dist-bar-wrap" style="margin-top:14px;"><div class="dist-bar-label"><span>Sepsis (1)</span><span style="font-family:var(--mono);font-weight:500;color:var(--amber)">24%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:24%;background:var(--amber);"></div></div></div>
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);"><div style="font-size:12px;color:var(--muted);margin-bottom:8px;">MIMIC-IV Source Tables</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">diagnoses_icd</div><div style="color:var(--muted);margin-top:2px;">6,364,488 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">chartevents</div><div style="color:var(--muted);margin-top:2px;">723,238 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">admissions</div><div style="color:var(--muted);margin-top:2px;">546,028 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">icustays</div><div style="color:var(--muted);margin-top:2px;">94,458 rows</div></div></div></div>
     </div>
     <div class="card">
@@ -334,11 +334,9 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
         <div>
           <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:600;">Patient readings over time</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:3px;">Type directly into the table — press Tab to move between cells. Add rows as needed.</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">Fill the table, then click <strong>Analyse →</strong> to run predictions.</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-family:var(--mono);font-size:12px;color:var(--green);background:var(--green-bg);padding:5px 12px;border-radius:8px;" id="t_count">0 readings</span>
-        </div>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--green);background:var(--green-bg);padding:5px 12px;border-radius:8px;" id="t_count">0 readings</span>
       </div>
 
       <!-- PRESET BUTTONS FOR TEMPORAL -->
@@ -385,23 +383,18 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
     </div>
 
     <div class="temporal-result" id="t_result">
-      <!-- FINAL VERDICT -->
       <div id="t_final_verdict" class="final-verdict low"></div>
-
-      <!-- STATS ROW -->
       <div style="display:flex;gap:12px;margin-bottom:20px;">
         <div class="t-stat" id="t_peak_stat" style="flex:1;"><div class="ts-val" id="t_peak_val">—</div><div class="ts-label">Peak risk</div></div>
         <div class="t-stat" style="flex:1;"><div class="ts-val" id="t_avg_val">—</div><div class="ts-label">Average risk</div></div>
         <div class="t-stat" id="t_trend_stat" style="flex:1;"><div class="ts-val" id="t_trend_val">—</div><div class="ts-label">Trend</div></div>
         <div class="t-stat" style="flex:1;"><div class="ts-val" id="t_sepsis_count">—</div><div class="ts-label">Sepsis readings</div></div>
       </div>
-
       <div class="card" style="margin-bottom:16px;">
         <div style="position:relative;width:100%;height:260px;">
           <canvas id="t_chart" role="img" aria-label="Line chart showing sepsis risk over time">Temporal risk chart</canvas>
         </div>
       </div>
-
       <div class="pred-table-wrap">
         <table class="pred-table">
           <thead><tr><th>Time</th><th>HR</th><th>Sys BP</th><th>SpO₂</th><th>Shock Index</th><th>Probability</th><th>Risk</th></tr></thead>
@@ -422,9 +415,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
     <input type="file" id="csv-file-input" accept=".csv" onchange="handleCSV(this.files[0])"/>
 
     <div class="temporal-result" id="csv_result">
-      <!-- FINAL VERDICT for CSV -->
       <div id="csv_final_verdict" class="final-verdict low" style="margin-bottom:20px;"></div>
-
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:-.3px;" id="csv_filename">Results</div>
         <div style="display:flex;gap:12px;">
@@ -538,8 +529,8 @@ function switchMode(mode, btn) {
 // ===== PRESETS =====
 const presets = {
   normal:   {hr:78,  sbp:122, dbp:74, mbp:90,  rr:16, spo2:98, age:48, gender:0},
-  moderate: {hr:92,  sbp:108, dbp:65, mbp:79,  rr:20, spo2:96, age:67, gender:1},
-  high:     {hr:106, sbp:96,  dbp:58, mbp:71,  rr:24, spo2:94, age:76, gender:1}
+  moderate: {hr:92,  sbp:108, dbp:65, mbp:79,  rr:20, spo2:96, age:61, gender:1},
+  high:     {hr:106, sbp:96,  dbp:58, mbp:71,  rr:24, spo2:94, age:79, gender:1}
 };
 
 function loadPreset(type) {
@@ -554,7 +545,6 @@ function loadPreset(type) {
   document.getElementById('s_gender').value = p.gender;
 }
 
-// Temporal presets — multi-point scenarios showing progression
 const temporalPresets = {
   normal: [
     {time:'08:00', hr:72,  sbp:122, dbp:76, mbp:91,  rr:15, spo2:99, age:52, gender:'0'},
@@ -564,11 +554,11 @@ const temporalPresets = {
     {time:'16:00', hr:73,  sbp:123, dbp:77, mbp:92,  rr:14, spo2:99, age:52, gender:'0'},
   ],
   moderate: [
-    {time:'08:00', hr:80,  sbp:118, dbp:72, mbp:87,  rr:17, spo2:97, age:66, gender:'1'},
-    {time:'10:00', hr:86,  sbp:113, dbp:68, mbp:83,  rr:19, spo2:96, age:66, gender:'1'},
-    {time:'12:00', hr:91,  sbp:108, dbp:65, mbp:79,  rr:21, spo2:95, age:66, gender:'1'},
-    {time:'14:00', hr:95,  sbp:103, dbp:62, mbp:76,  rr:22, spo2:95, age:66, gender:'1'},
-    {time:'16:00', hr:99,  sbp:99,  dbp:60, mbp:73,  rr:23, spo2:94, age:66, gender:'1'},
+    {time:'08:00', hr:80,  sbp:118, dbp:72, mbp:87,  rr:17, spo2:97, age:58, gender:'1'},
+    {time:'10:00', hr:86,  sbp:113, dbp:68, mbp:83,  rr:19, spo2:96, age:58, gender:'1'},
+    {time:'12:00', hr:91,  sbp:108, dbp:65, mbp:79,  rr:21, spo2:95, age:58, gender:'1'},
+    {time:'14:00', hr:95,  sbp:103, dbp:62, mbp:76,  rr:22, spo2:95, age:58, gender:'1'},
+    {time:'16:00', hr:99,  sbp:99,  dbp:60, mbp:73,  rr:23, spo2:94, age:58, gender:'1'},
   ],
   high: [
     {time:'08:00', hr:88,  sbp:110, dbp:68, mbp:82,  rr:19, spo2:96, age:74, gender:'1'},
@@ -580,17 +570,12 @@ const temporalPresets = {
 };
 
 function loadTemporalPreset(type) {
-  // Clear existing rows
   document.getElementById('t_input_tbody').innerHTML = '';
   rowCount = 0;
   document.getElementById('t_result').style.display = 'none';
-
   const rows = temporalPresets[type];
   rows.forEach(r => addTableRow(r));
   updateCount();
-
-  // Auto-run after a short delay
-  setTimeout(() => runTemporal(true), 200);
 }
 
 // ===== SINGLE PREDICT =====
@@ -639,44 +624,28 @@ function renderSingleResult(r, inputs) {
   document.getElementById('s_alert_text').textContent = msgs[level];
 }
 
-// ===== BUILD FINAL VERDICT HTML =====
+// ===== FINAL VERDICT =====
 function buildFinalVerdict(preds) {
   const probs = preds.map(p => p.probability_percent);
   const peak  = Math.max(...probs);
   const avg   = probs.reduce((a,b) => a+b, 0) / probs.length;
   const rising = probs[probs.length-1] > probs[0];
   const sepsisCount = preds.filter(p => p.risk_level === 'High').length;
-
-  // Determine overall level: use peak as primary signal, weight trend
   let level;
   if (peak >= 65 || (peak >= 50 && rising)) level = 'high';
   else if (peak >= 35 || avg >= 28) level = 'moderate';
   else level = 'low';
-
   const configs = {
-    low: {
-      icon: '✅',
-      sub: 'Overall Assessment',
-      title: 'Low Sepsis Risk — Patient Stable',
-      desc: 'Vital signs across all time points remain within acceptable clinical ranges. No significant deterioration observed.',
-      actions: 'Continue routine monitoring every 4–6 hours. Reassess if vitals change or symptoms develop.'
-    },
-    moderate: {
-      icon: '⚠️',
-      sub: 'Overall Assessment',
-      title: 'Moderate Risk — Clinical Attention Required',
-      desc: 'One or more readings show elevated sepsis probability' + (rising ? ', with a worsening trend over time.' : '. Trend is not yet clearly escalating, but warrants close observation.'),
-      actions: 'Reassess within 2 hours. Order: lactate, CBC, CMP, blood cultures ×2. Ensure IV access.'
-    },
-    high: {
-      icon: '🚨',
-      sub: 'URGENT — Overall Assessment',
-      title: 'High Sepsis Risk — Immediate Action',
-      desc: 'Multiple readings indicate critical sepsis probability' + (rising ? ', with a rapidly escalating trend.' : '. Peak risk is critically high.') + ' Immediate intervention is warranted.',
-      actions: 'INITIATE HOUR-1 BUNDLE: Blood cultures ×2 → IV antibiotics (broad-spectrum) → IV fluids 30 mL/kg → Measure lactate → Vasopressors if MAP < 65 mmHg'
-    }
+    low: { icon:'✅', sub:'Overall Assessment', title:'Low Sepsis Risk — Patient Stable',
+      desc:'Vital signs across all time points remain within acceptable clinical ranges. No significant deterioration observed.',
+      actions:'Continue routine monitoring every 4–6 hours. Reassess if vitals change or symptoms develop.' },
+    moderate: { icon:'⚠️', sub:'Overall Assessment', title:'Moderate Risk — Clinical Attention Required',
+      desc:'One or more readings show elevated sepsis probability' + (rising ? ', with a worsening trend over time.' : '. Trend is not yet clearly escalating, but warrants close observation.'),
+      actions:'Reassess within 2 hours. Order: lactate, CBC, CMP, blood cultures ×2. Ensure IV access.' },
+    high: { icon:'🚨', sub:'URGENT — Overall Assessment', title:'High Sepsis Risk — Immediate Action',
+      desc:'Multiple readings indicate critical sepsis probability' + (rising ? ', with a rapidly escalating trend.' : '. Peak risk is critically high.') + ' Immediate intervention is warranted.',
+      actions:'INITIATE HOUR-1 BUNDLE: Blood cultures ×2 → IV antibiotics (broad-spectrum) → IV fluids 30 mL/kg → Measure lactate → Vasopressors if MAP < 65 mmHg' }
   };
-
   const c = configs[level];
   return { level, html: `
     <div class="fv-icon">${c.icon}</div>
@@ -686,16 +655,16 @@ function buildFinalVerdict(preds) {
       <div class="fv-desc">${c.desc}</div>
       <div class="fv-actions">${c.actions}</div>
       <div class="fv-stats" style="margin-top:14px;">
-        <div class="fv-stat ${level === 'high' ? 'danger' : level === 'moderate' ? 'warn' : 'safe'}">
+        <div class="fv-stat ${level==='high'?'danger':level==='moderate'?'warn':'safe'}">
           <div class="fvs-val">${peak.toFixed(1)}%</div><div class="fvs-label">Peak Risk</div>
         </div>
         <div class="fv-stat">
           <div class="fvs-val">${avg.toFixed(1)}%</div><div class="fvs-label">Avg Risk</div>
         </div>
-        <div class="fv-stat ${rising ? 'danger' : 'safe'}">
-          <div class="fvs-val">${rising ? '↑ Rising' : '↓ Falling'}</div><div class="fvs-label">Trend</div>
+        <div class="fv-stat ${rising?'danger':'safe'}">
+          <div class="fvs-val">${rising?'↑ Rising':'↓ Falling'}</div><div class="fvs-label">Trend</div>
         </div>
-        <div class="fv-stat ${sepsisCount > 0 ? 'danger' : 'safe'}">
+        <div class="fv-stat ${sepsisCount>0?'danger':'safe'}">
           <div class="fvs-val">${sepsisCount}/${preds.length}</div><div class="fvs-label">High-risk pts</div>
         </div>
       </div>
@@ -710,10 +679,9 @@ function buildFinalVerdict(preds) {
 // ===== TEMPORAL TABLE =====
 let tChart = null;
 let rowCount = 0;
-let autoUpdateTimer = null;
 
 function cellStyle(type) {
-  const base = 'width:100%;border:none;outline:none;background:transparent;font-family:\'JetBrains Mono\',monospace;font-size:12px;color:var(--text);padding:2px 4px;';
+  const base = "width:100%;border:none;outline:none;background:transparent;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);padding:2px 4px;";
   return type === 'select' ? base + 'cursor:pointer;' : base;
 }
 
@@ -733,16 +701,16 @@ function addTableRow(defaults) {
   const prevGender = prevRow ? prevRow.querySelector('[data-field="gender"]').value : '1';
 
   tr.innerHTML = `
-    <td style="padding:6px 12px;"><input data-field="time" type="text" value="${d.time||('Hour '+n)}" style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
-    <td style="padding:6px 8px;"><input data-field="hr"   type="number" placeholder="72"  value="${d.hr||''}"   style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
-    <td style="padding:6px 8px;"><input data-field="sbp"  type="number" placeholder="120" value="${d.sbp||''}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
-    <td style="padding:6px 8px;"><input data-field="dbp"  type="number" placeholder="80"  value="${d.dbp||''}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
-    <td style="padding:6px 8px;"><input data-field="mbp"  type="number" placeholder="93"  value="${d.mbp||''}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
-    <td style="padding:6px 8px;"><input data-field="rr"   type="number" placeholder="16"  value="${d.rr||''}"   style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
-    <td style="padding:6px 8px;"><input data-field="spo2" type="number" placeholder="98"  value="${d.spo2||''}" style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
-    <td style="padding:6px 8px;"><input data-field="age"  type="number" placeholder="55"  value="${d.age||prevAge}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 12px;"><input data-field="time" type="text" value="${d.time||('Hour '+n)}" style="${cellStyle()}" oninput="updateCount()"/></td>
+    <td style="padding:6px 8px;"><input data-field="hr"   type="number" placeholder="72"  value="${d.hr||''}"   style="${cellStyle()}" oninput="updateCount()"/></td>
+    <td style="padding:6px 8px;"><input data-field="sbp"  type="number" placeholder="120" value="${d.sbp||''}"  style="${cellStyle()}" oninput="updateCount()"/></td>
+    <td style="padding:6px 8px;"><input data-field="dbp"  type="number" placeholder="80"  value="${d.dbp||''}"  style="${cellStyle()}" oninput="updateCount()"/></td>
+    <td style="padding:6px 8px;"><input data-field="mbp"  type="number" placeholder="93"  value="${d.mbp||''}"  style="${cellStyle()}" oninput="updateCount()"/></td>
+    <td style="padding:6px 8px;"><input data-field="rr"   type="number" placeholder="16"  value="${d.rr||''}"   style="${cellStyle()}" oninput="updateCount()"/></td>
+    <td style="padding:6px 8px;"><input data-field="spo2" type="number" placeholder="98"  value="${d.spo2||''}" style="${cellStyle()}" oninput="updateCount()"/></td>
+    <td style="padding:6px 8px;"><input data-field="age"  type="number" placeholder="55"  value="${d.age||prevAge}"  style="${cellStyle()}" oninput="updateCount()"/></td>
     <td style="padding:6px 8px;">
-      <select data-field="gender" style="${cellStyle('select')}" onchange="scheduleAutoUpdate()">
+      <select data-field="gender" style="${cellStyle('select')}" onchange="updateCount()">
         <option value="1" ${(d.gender==='1'||(!d.gender&&prevGender==='1'))?'selected':''}>M</option>
         <option value="0" ${(d.gender==='0'||(!d.gender&&prevGender==='0'))?'selected':''}>F</option>
       </select>
@@ -759,7 +727,6 @@ function removeRow(id) {
   const el = document.getElementById(id);
   if (el) el.remove();
   updateCount();
-  scheduleAutoUpdate();
 }
 
 function updateCount() {
@@ -787,15 +754,6 @@ function getValidRows() {
   return rows;
 }
 
-function scheduleAutoUpdate() {
-  updateCount();
-  clearTimeout(autoUpdateTimer);
-  const rows = getValidRows();
-  if (rows.length < 2) return;
-  document.getElementById('t_count').textContent += ' — updating...';
-  autoUpdateTimer = setTimeout(() => runTemporal(true), 800);
-}
-
 function clearReadings() {
   document.getElementById('t_input_tbody').innerHTML = '';
   rowCount = 0;
@@ -804,9 +762,10 @@ function clearReadings() {
   addTableRow(); addTableRow(); addTableRow();
 }
 
-async function runTemporal(silent) {
+// ===== TEMPORAL RUN — only called by explicit button click =====
+async function runTemporal() {
   const readings = getValidRows();
-  if (readings.length < 2) { if (!silent) alert('Please fill at least 2 complete rows.'); return; }
+  if (readings.length < 2) { alert('Please fill at least 2 complete rows.'); return; }
   const btn = document.getElementById('t_analyse_btn');
   btn.textContent = 'Analysing...'; btn.disabled = true;
   try {
@@ -817,35 +776,28 @@ async function runTemporal(silent) {
     ));
     const preds = results.map((d, i) => ({...readings[i], ...d.result}));
     renderTemporalResult(preds, 't');
-  } catch(e) { if (!silent) alert('Error: ' + e.message); }
+  } catch(e) { alert('Error: ' + e.message); }
   finally { btn.textContent = 'Analyse →'; btn.disabled = false; }
 }
 
 function renderTemporalResult(preds, prefix) {
   const resultEl = document.getElementById(prefix + '_result');
   resultEl.style.display = 'block';
-
   const probs = preds.map(p => p.probability_percent);
   const peak  = Math.max(...probs);
   const avg   = probs.reduce((a,b) => a+b, 0) / probs.length;
   const rising = probs[probs.length-1] > probs[0];
   const sepsisCount = preds.filter(p => p.risk_level === 'High').length;
-
-  // ---- FINAL VERDICT ----
   const verdict = buildFinalVerdict(preds);
   const verdictEl = document.getElementById(prefix + '_final_verdict');
   verdictEl.className = 'final-verdict ' + verdict.level;
   verdictEl.innerHTML = verdict.html;
-
-  // ---- STATS (for temporal only — csv uses its own stat els) ----
   const peakEl = document.getElementById(prefix + '_peak_val');
   const avgEl  = document.getElementById(prefix + '_avg_val');
   if (peakEl) peakEl.textContent = peak.toFixed(1) + '%';
   if (avgEl)  avgEl.textContent  = avg.toFixed(1) + '%';
-
   const peakStat = document.getElementById(prefix + '_peak_stat');
   if (peakStat) peakStat.className = 't-stat ' + (peak >= 65 ? 'danger' : peak >= 35 ? 'warn' : 'safe');
-
   if (prefix === 't') {
     document.getElementById('t_trend_val').textContent = rising ? '↑ Rising' : '↓ Falling';
     document.getElementById('t_trend_stat').className = 't-stat ' + (rising ? 'danger' : 'safe');
@@ -853,12 +805,9 @@ function renderTemporalResult(preds, prefix) {
   } else {
     document.getElementById('csv_rows_val').textContent = preds.length;
   }
-
-  // ---- CHART ----
   const labels = preds.map(p => p.time || ('#' + (preds.indexOf(p)+1)));
   const data   = preds.map(p => parseFloat(p.probability_percent.toFixed(1)));
   const colors = preds.map(p => p.risk_level === 'High' ? '#8b1f1f' : p.risk_level === 'Moderate' ? '#92550a' : '#2d6b4a');
-
   const canvasId = prefix + '_chart';
   if (prefix === 't' && tChart) { tChart.destroy(); }
   const ctx = document.getElementById(canvasId);
@@ -893,8 +842,6 @@ function renderTemporalResult(preds, prefix) {
     }
   });
   if (prefix === 't') tChart = chartObj;
-
-  // ---- TABLE ----
   const tbody = document.getElementById(prefix === 't' ? 't_pred_tbody' : 'csv_tbody');
   tbody.innerHTML = preds.map((p, i) => {
     const si    = (p.hr / (p.sbp + 1)).toFixed(3);
@@ -905,8 +852,6 @@ function renderTemporalResult(preds, prefix) {
       <td><span class="risk-pill ${level}">${p.risk_level}</span></td>
     </tr>`;
   }).join('');
-
-  // Scroll to result
   resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -926,7 +871,6 @@ function handleCSV(file) {
       const required = ['heart_rate','systolic_bp','diastolic_bp','mean_bp','respiratory_rate','spo2','age','gender'];
       const missing = required.filter(c => !(c in rows[0]));
       if (missing.length) { alert('Missing columns: ' + missing.join(', ')); return; }
-
       try {
         const results = await Promise.all(rows.map(row =>
           fetch('/predict', {method:'POST',headers:{'Content-Type':'application/json'},
@@ -996,3 +940,5 @@ addTableRow(); addTableRow(); addTableRow();
 </script>
 </body>
 </html>
+HTMLEOF
+echo "Done"

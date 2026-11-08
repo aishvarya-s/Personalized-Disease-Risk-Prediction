@@ -25,9 +25,11 @@ The current implementation focuses on sepsis prediction using machine learning c
 ### Model Results
 ![Model Results](images/model-results.png)
 
+---
+
 ## 📊 Dataset
 
----
+
 
 **MIMIC-IV Clinical Database**
 

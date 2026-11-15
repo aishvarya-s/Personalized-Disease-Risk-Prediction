@@ -1,3 +1,4 @@
+import json
 import pickle
 import pandas as pd
 import numpy as np
@@ -17,19 +18,27 @@ FEATURE_COLS = [
     "anchor_age"
 ]
 
-# ---------------- LOAD MODEL & SCALER (cached) ---------------- #
+# ---------------- LOAD MODEL, SCALER, TRAIN MEANS (cached) ---------------- #
 
 _model  = None
 _scaler = None
+_means  = None
+_cfg    = None
 
 def load_model():
-    global _model, _scaler
+    global _model, _scaler, _means, _cfg
     if _model is None or _scaler is None:
         with open("src/models/saved/xgboost_model.pkl", "rb") as f:
             _model = pickle.load(f)
         with open("src/models/saved/scaler.pkl", "rb") as f:
             _scaler = pickle.load(f)
-    return _model, _scaler
+        # training-set means, saved by train_app_model.py, used to fill any missing input
+        with open("src/models/saved/train_means.pkl", "rb") as f:
+            _means = pickle.load(f)
+        # calibration + risk cut-offs chosen on held-out patients by train_app_model.py
+        with open("src/models/saved/thresholds.json") as f:
+            _cfg = json.load(f)
+    return _model, _scaler, _means, _cfg
 
 
 # ---------------- PREDICT FUNCTION ---------------- #
@@ -49,18 +58,21 @@ def predict_sepsis(
 
     Returns dict:
         prediction          : 0 or 1  (model's binary output)
-        probability         : float 0.0–1.0
-        probability_percent : float 0.0–100.0
+        probability         : float 0.0-1.0
+        probability_percent : float 0.0-100.0
         risk_level          : "Low" / "Moderate" / "High"
+        relative_risk       : probability divided by the average risk in the ICU population
+
+    probability = calibrated chance of Sepsis-3 onset within the next 6 hours.
+    It is small by design: only ~0.6% of ICU hours precede sepsis onset.
     """
 
-    model, scaler = load_model()
+    model, scaler, means, cfg = load_model()
 
-    # engineered features — must match train_and_save.py exactly
+    # engineered features - must match train_app_model.py exactly
     shock_index    = heart_rate / (systolic_bp + 1)
     pulse_pressure = systolic_bp - diastolic_bp
 
-    # build DataFrame with correct column names — fixes sklearn feature-name warning
     features = pd.DataFrame([[
         heart_rate,
         systolic_bp,
@@ -74,34 +86,35 @@ def predict_sepsis(
         age
     ]], columns=FEATURE_COLS)
 
-    # replace inf/nan safely
+    # fill missing values with TRAINING means
     features = features.replace([np.inf, -np.inf], np.nan)
-    features = features.fillna(features.mean())
+    features = features.fillna(means)
 
     # scale
     features_scaled = scaler.transform(features)
 
-    # predict
-    prediction  = int(model.predict(features_scaled)[0])
-    probability = float(model.predict_proba(features_scaled)[0][1])
+    # predict + calibrate (Platt scaling fitted on held-out patients)
+    raw = float(model.predict_proba(features_scaled)[0][1])
+    raw = min(max(raw, 1e-6), 1 - 1e-6)
+    z = cfg["platt_a"] * np.log(raw / (1 - raw)) + cfg["platt_b"]
+    probability = float(1 / (1 + np.exp(-z)))
 
-    # ---------------- RISK THRESHOLDS ---------------- #
-    # Based on actual MIMIC-IV data analysis:
-    # - Sepsis and non-sepsis vitals overlap heavily
-    # - Model probability distribution is compressed (most values 0.1–0.5)
-    # - Thresholds tuned to reflect clinical reality of this dataset
-    if probability < 0.25:
-        risk_level = "Low"
-    elif probability < 0.45:
+    # ---------------- RISK LEVELS ---------------- #
+    # cut-offs are the top-5% (High) and top-20% (Moderate) score levels on held-out calibration patients
+    if probability >= cfg["high_thr"]:
+        risk_level = "High"
+    elif probability >= cfg["moderate_thr"]:
         risk_level = "Moderate"
     else:
-        risk_level = "High"
+        risk_level = "Low"
+    prediction = 1 if risk_level == "High" else 0
 
     return {
         "prediction":          prediction,
-        "probability":         round(probability, 4),
-        "probability_percent": round(probability * 100, 1),
-        "risk_level":          risk_level
+        "probability":         round(probability, 5),
+        "probability_percent": round(probability * 100, 2),
+        "risk_level":          risk_level,
+        "relative_risk":       round(probability / cfg["base_rate"], 2)
     }
 
 
@@ -111,22 +124,18 @@ if __name__ == "__main__":
     print("=== Testing with MIMIC-IV representative values ===\n")
 
     tests = [
-        # non-sepsis mean: HR=84, SBP=119, Age=62
         ("Non-sepsis typical (Female, 48)",
          dict(heart_rate=78,  systolic_bp=122, diastolic_bp=74, mean_bp=90,
               respiratory_rate=16, spo2=98, gender=0, age=48)),
 
-        # borderline: older male near sepsis 50th percentile
         ("Borderline (Male, 67)",
          dict(heart_rate=92,  systolic_bp=108, diastolic_bp=65, mean_bp=79,
               respiratory_rate=20, spo2=96, gender=1, age=67)),
 
-        # sepsis 75th pct HR, 25th pct SBP, older male
         ("High risk (Male, 76)",
          dict(heart_rate=106, systolic_bp=96,  diastolic_bp=58, mean_bp=71,
               respiratory_rate=24, spo2=94, gender=1, age=76)),
 
-        # sepsis mean values directly
         ("Sepsis mean values (Male, 65)",
          dict(heart_rate=90,  systolic_bp=113, diastolic_bp=67, mean_bp=82,
               respiratory_rate=19, spo2=97, gender=1, age=65)),

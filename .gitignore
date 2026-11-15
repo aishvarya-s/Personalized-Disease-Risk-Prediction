@@ -1,6 +1,16 @@
+# MIMIC-IV is credentialed data: never commit it or anything row-level derived from it
 data/
 *.csv
 *.gz
+*.parquet
+preds/
+*.npz
+*.log
+# virtual envs / caches
 .venv/
 __pycache__/
 .DS_Store
+# trained models are derived from MIMIC: keep out of git until your guide confirms sharing is allowed
+# (remove these two lines if it is; then commit src/models/saved/ including thresholds.json and train_means.pkl)
+src/models/saved/*.pkl
+src/models/saved/*.json

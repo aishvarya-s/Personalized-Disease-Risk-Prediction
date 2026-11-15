@@ -218,37 +218,37 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
     <button class="nav-tab" onclick="showSection('predict',this)">Predict</button>
     <button class="nav-tab" onclick="showSection('models',this)">Model Results</button>
   </div>
-  <div class="nav-badge">MIMIC-IV · Phase 1</div>
+  <div class="nav-badge">MIMIC-IV · Research project</div>
 </nav>
 
 <!-- ===== DATASET ===== -->
 <div class="section active" id="sec-dataset">
   <div class="page-title">Dataset Overview</div>
-  <div class="page-sub">MIMIC-IV clinical database — ICU patient records with sepsis labels</div>
+  <div class="page-sub">MIMIC-IV ICU data — hourly observations labelled by Sepsis-3 onset within the next 6 hours</div>
   <div class="stat-grid">
-    <div class="stat-card"><div class="s-label">Total Records</div><div class="s-val">135,452</div><div class="s-note">Hourly ICU observations</div></div>
-    <div class="stat-card blue"><div class="s-label">Features</div><div class="s-val">17</div><div class="s-note">10 model features used</div></div>
-    <div class="stat-card amber"><div class="s-label">Sepsis Positive</div><div class="s-val">24%</div><div class="s-note">approx. · ICD-code labelled</div></div>
-    <div class="stat-card green"><div class="s-label">Unique Patients</div><div class="s-val">364K+</div><div class="s-note">MIMIC-IV patients table</div></div>
+    <div class="stat-card"><div class="s-label">Total Records</div><div class="s-val">2.83M</div><div class="s-note">Hourly rows · 65,400 ICU stays</div></div>
+    <div class="stat-card blue"><div class="s-label">Features</div><div class="s-val">115</div><div class="s-note">Research models · this demo uses 10</div></div>
+    <div class="stat-card amber"><div class="s-label">Sepsis Positive</div><div class="s-val">0.6%</div><div class="s-note">Hours before Sepsis-3 onset (6 h)</div></div>
+    <div class="stat-card green"><div class="s-label">Unique Patients</div><div class="s-val">49,276</div><div class="s-note">Adult ICU patients</div></div>
   </div>
   <div class="two-col">
     <div class="card">
       <div class="card-title">Sepsis label distribution</div>
-      <div class="card-sub">Binary label from ICD-9/10 codes</div>
-      <div class="dist-bar-wrap"><div class="dist-bar-label"><span>Non-Sepsis (0)</span><span style="font-family:var(--mono);font-weight:500">76%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:76%;background:#1a3a2a;"></div></div></div>
-      <div class="dist-bar-wrap" style="margin-top:14px;"><div class="dist-bar-label"><span>Sepsis (1)</span><span style="font-family:var(--mono);font-weight:500;color:var(--amber)">24%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:24%;background:var(--amber);"></div></div></div>
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);"><div style="font-size:12px;color:var(--muted);margin-bottom:8px;">MIMIC-IV Source Tables</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">diagnoses_icd</div><div style="color:var(--muted);margin-top:2px;">6,364,488 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">chartevents</div><div style="color:var(--muted);margin-top:2px;">723,238 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">admissions</div><div style="color:var(--muted);margin-top:2px;">546,028 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">icustays</div><div style="color:var(--muted);margin-top:2px;">94,458 rows</div></div></div></div>
+      <div class="card-sub">Label: Sepsis-3 onset within the next 6 hours</div>
+      <div class="dist-bar-wrap"><div class="dist-bar-label"><span>Not followed by onset (0)</span><span style="font-family:var(--mono);font-weight:500">99.4%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:99.4%;background:#1a3a2a;"></div></div></div>
+      <div class="dist-bar-wrap" style="margin-top:14px;"><div class="dist-bar-label"><span>Onset within 6 h (1)</span><span style="font-family:var(--mono);font-weight:500;color:var(--amber)">0.6%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:0.6%;min-width:3px;background:var(--amber);"></div></div></div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);"><div style="font-size:12px;color:var(--muted);margin-bottom:8px;">MIMIC-IV source tables</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">vitalsign (derived)</div><div style="color:var(--muted);margin-top:2px;">hourly vitals, first 72 ICU h</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">lab tables (derived)</div><div style="color:var(--muted);margin-top:2px;">5 tables, 15 labs</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">sepsis3 (derived)</div><div style="color:var(--muted);margin-top:2px;">label source (onset time)</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">icustays</div><div style="color:var(--muted);margin-top:2px;">94,458 stays</div></div></div></div>
     </div>
     <div class="card">
       <div class="card-title">Vital signs extracted</div>
-      <div class="card-sub">ITEMID mapping from chartevents</div>
-      <table class="v-table"><thead><tr><th>Vital Sign</th><th>ITEMID</th><th></th></tr></thead><tbody>
-        <tr><td>Heart Rate</td><td class="itemid">220045</td><td><span class="dot"></span></td></tr>
-        <tr><td>Systolic BP</td><td class="itemid">220179</td><td><span class="dot"></span></td></tr>
-        <tr><td>Diastolic BP</td><td class="itemid">220180</td><td><span class="dot"></span></td></tr>
-        <tr><td>Mean BP</td><td class="itemid">220181</td><td><span class="dot"></span></td></tr>
-        <tr><td>Respiratory Rate</td><td class="itemid">220210</td><td><span class="dot"></span></td></tr>
-        <tr><td>SpO₂</td><td class="itemid">220277</td><td><span class="dot"></span></td></tr>
+      <div class="card-sub">Columns from the derived vitalsign table</div>
+      <table class="v-table"><thead><tr><th>Vital Sign</th><th>Column</th><th></th></tr></thead><tbody>
+        <tr><td>Heart Rate</td><td class="itemid">heart_rate</td><td><span class="dot"></span></td></tr>
+        <tr><td>Systolic BP</td><td class="itemid">systolic_bp</td><td><span class="dot"></span></td></tr>
+        <tr><td>Diastolic BP</td><td class="itemid">diastolic_bp</td><td><span class="dot"></span></td></tr>
+        <tr><td>Mean BP</td><td class="itemid">mean_bp</td><td><span class="dot"></span></td></tr>
+        <tr><td>Respiratory Rate</td><td class="itemid">respiratory_rate</td><td><span class="dot"></span></td></tr>
+        <tr><td>SpO₂</td><td class="itemid">spo2</td><td><span class="dot"></span></td></tr>
       </tbody></table>
     </div>
   </div>
@@ -257,14 +257,14 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
       <div class="card-title">Preprocessing pipeline</div>
       <div class="card-sub">8-step data processing workflow</div>
       <div class="pipeline-steps">
-        <div class="p-step"><div class="p-num">1</div><div class="p-text">Extract ICU vital signs using ITEMIDs</div></div>
-        <div class="p-step"><div class="p-num">2</div><div class="p-text">Filter records by patient identifiers</div></div>
-        <div class="p-step"><div class="p-num">3</div><div class="p-text">Convert timestamps to datetime format</div></div>
-        <div class="p-step"><div class="p-num">4</div><div class="p-text">Aggregate vitals at hourly intervals</div></div>
-        <div class="p-step"><div class="p-num">5</div><div class="p-text">Forward + backward fill for missing values</div></div>
+        <div class="p-step"><div class="p-num">1</div><div class="p-text">Pull hourly vitals (first 72 ICU h) and labs from derived tables</div></div>
+        <div class="p-step"><div class="p-num">2</div><div class="p-text">Set implausible values to missing; remove duplicates</div></div>
+        <div class="p-step"><div class="p-num">3</div><div class="p-text">Adults only; drop stays with onset &lt; 6 h after ICU admission</div></div>
+        <div class="p-step"><div class="p-num">4</div><div class="p-text">Hourly grid per stay; labs count as known 1 h after the draw</div></div>
+        <div class="p-step"><div class="p-num">5</div><div class="p-text">Forward fill only (never backward, so no future leakage)</div></div>
         <div class="p-step"><div class="p-num">6</div><div class="p-text">Encode gender: M → 1, F → 0</div></div>
-        <div class="p-step"><div class="p-num">7</div><div class="p-text">Generate sepsis labels from ICD codes</div></div>
-        <div class="p-step"><div class="p-num">8</div><div class="p-text">Merge into unified 135,452-row dataset</div></div>
+        <div class="p-step"><div class="p-num">7</div><div class="p-text">Label = Sepsis-3 onset within next 6 h; rows after onset dropped</div></div>
+        <div class="p-step"><div class="p-num">8</div><div class="p-text">Save 2,827,647 rows × 115 features</div></div>
       </div>
     </div>
     <div class="card">
@@ -272,7 +272,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
       <div class="card-sub">Clinical indicators derived from raw vitals</div>
       <div style="margin-bottom:16px;"><div style="background:var(--surface2);border-radius:10px;padding:16px;"><div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:500;">Shock Index</div><div style="font-family:var(--mono);font-size:14px;">HR / (Systolic BP + 1)</div><div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Values > 1.0 are clinically significant for sepsis risk.</div></div></div>
       <div><div style="background:var(--surface2);border-radius:10px;padding:16px;"><div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:500;">Pulse Pressure</div><div style="font-family:var(--mono);font-size:14px;">Systolic BP − Diastolic BP</div><div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Abnormal pulse pressure indicates hemodynamic instability.</div></div></div>
-      <div style="margin-top:14px;padding:12px;background:var(--green-bg);border-radius:10px;font-size:12px;color:#1d4a2f;line-height:1.6;"><strong>Train/Test split:</strong> 80/20 stratified. StandardScaler applied before training.</div>
+      <div style="margin-top:14px;padding:12px;background:var(--green-bg);border-radius:10px;font-size:12px;color:#1d4a2f;line-height:1.6;"><strong>Evaluation:</strong> always split by patient, never by row. Research models: 5-fold GroupKFold. This demo model: 60/20/20 patient split. Scaling and imputation use training data only.</div>
     </div>
   </div>
 </div>
@@ -281,6 +281,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
 <div class="section" id="sec-predict">
   <div class="page-title">Sepsis Risk Prediction</div>
   <div class="page-sub">Single reading, temporal multi-point analysis, or CSV upload</div>
+  <div style="font-size:12px;color:var(--muted);margin:-8px 0 16px;line-height:1.5;">Research prototype: estimates risk of sepsis onset within 6 hours from a single snapshot of vitals. Not a diagnostic tool and not for patient care.</div>
 
   <div class="mode-tabs">
     <button class="mode-tab active" onclick="switchMode('single',this)">Single Reading</button>
@@ -440,70 +441,24 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
 <!-- ===== MODELS ===== -->
 <div class="section" id="sec-models">
   <div class="page-title">Model Performance</div>
-  <div class="page-sub">Comparative evaluation of 3 ML models on the MIMIC-IV sepsis dataset</div>
-  <div class="models-grid">
-    <div class="model-card">
-      <div class="model-header"><div class="model-tag">Baseline</div><div class="model-name">Logistic Regression</div></div>
-      <div class="model-metrics">
-        <div class="metric-row"><span class="metric-name">Accuracy</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:61%;background:#888;"></div></div><span class="metric-val">61%</span></div>
-        <div class="metric-row"><span class="metric-name">Precision</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:42%;background:#888;"></div></div><span class="metric-val">42%</span></div>
-        <div class="metric-row"><span class="metric-name">Recall</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:63%;background:#888;"></div></div><span class="metric-val">63%</span></div>
-        <div class="metric-row"><span class="metric-name">F1-score</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:50%;background:#888;"></div></div><span class="metric-val">50%</span></div>
-        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Linear model; limited in capturing nonlinear physiological patterns.</div>
-      </div>
-    </div>
-    <div class="model-card">
-      <div class="model-header"><div class="model-tag">Ensemble</div><div class="model-name">Random Forest</div></div>
-      <div class="model-metrics">
-        <div class="metric-row"><span class="metric-name">Accuracy</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:90%;background:#1a3a6b;"></div></div><span class="metric-val">90%</span></div>
-        <div class="metric-row"><span class="metric-name">Precision</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:92%;background:#1a3a6b;"></div></div><span class="metric-val" style="color:var(--blue);">92%</span></div>
-        <div class="metric-row"><span class="metric-name">Recall</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:73%;background:#1a3a6b;"></div></div><span class="metric-val">73%</span></div>
-        <div class="metric-row"><span class="metric-name">F1-score</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:82%;background:#1a3a6b;"></div></div><span class="metric-val">82%</span></div>
-        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Highest precision (92%) — very reliable when it predicts sepsis. Lower recall misses some cases.</div>
-      </div>
-    </div>
-    <div class="model-card best">
-      <div class="model-header"><div class="model-tag">Boosting · Tuned</div><div class="model-name">XGBoost</div><div class="model-best-badge">★ Best for clinical use</div></div>
-      <div class="model-metrics">
-        <div class="metric-row"><span class="metric-name">Accuracy</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:90%;background:var(--green);"></div></div><span class="metric-val">90%</span></div>
-        <div class="metric-row"><span class="metric-name">Precision</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:80%;background:var(--green);"></div></div><span class="metric-val">80%</span></div>
-        <div class="metric-row"><span class="metric-name">Recall</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:90%;background:var(--green);"></div></div><span class="metric-val" style="color:var(--green);font-weight:600;">90%</span></div>
-        <div class="metric-row"><span class="metric-name">F1-score</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:84%;background:var(--green);"></div></div><span class="metric-val" style="color:var(--green);font-weight:600;">84%</span></div>
-        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:#1d4a2f;line-height:1.6;background:var(--green-bg);padding:10px 12px;border-radius:8px;">Highest recall (90%) — catches the most sepsis cases. Critical for clinical use.</div>
-      </div>
-    </div>
-  </div>
+  <div class="page-sub">Patient-level 5-fold evaluation of 5 models on held-out patients (mean of folds; fold-to-fold spread about ±0.012–0.015 AUROC). Only 0.6% of hours are positive, so random guessing gives AUPRC 0.006 and 5% recall at a 5% alert rate.</div>
+  <div class="models-grid"><div class="model-card"><div class="model-header"><div class="model-tag">Baseline</div><div class="model-name">Logistic Regression</div></div><div class="model-metrics"><div class="metric-row"><span class="metric-name">AUROC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:70.2%;min-width:2px;background:#888;"></div></div><span class="metric-val">0.702</span></div><div class="metric-row"><span class="metric-name">AUPRC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:1.4%;min-width:2px;background:#888;"></div></div><span class="metric-val">0.014</span></div><div class="metric-row"><span class="metric-name">Recall @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:16.9%;min-width:2px;background:#888;"></div></div><span class="metric-val">16.9%</span></div><div class="metric-row"><span class="metric-name">Precision @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.0%;min-width:2px;background:#888;"></div></div><span class="metric-val">2.0%</span></div><div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Linear model on 115 features.</div></div></div><div class="model-card"><div class="model-header"><div class="model-tag">Deep learning</div><div class="model-name">LSTM</div></div><div class="model-metrics"><div class="metric-row"><span class="metric-name">AUROC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:70.5%;min-width:2px;background:#b5651d;"></div></div><span class="metric-val">0.705</span></div><div class="metric-row"><span class="metric-name">AUPRC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:1.6%;min-width:2px;background:#b5651d;"></div></div><span class="metric-val">0.016</span></div><div class="metric-row"><span class="metric-name">Recall @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:18.5%;min-width:2px;background:#b5651d;"></div></div><span class="metric-val">18.5%</span></div><div class="metric-row"><span class="metric-name">Precision @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.2%;min-width:2px;background:#b5651d;"></div></div><span class="metric-val">2.2%</span></div><div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">2 layers × 64 units on the last 24 h of raw measurements; overfits within 1–3 epochs.</div></div></div><div class="model-card"><div class="model-header"><div class="model-tag">Deep learning</div><div class="model-name">GRU</div></div><div class="model-metrics"><div class="metric-row"><span class="metric-name">AUROC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:71.5%;min-width:2px;background:#8a4fa0;"></div></div><span class="metric-val">0.715</span></div><div class="metric-row"><span class="metric-name">AUPRC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:1.6%;min-width:2px;background:#8a4fa0;"></div></div><span class="metric-val">0.016</span></div><div class="metric-row"><span class="metric-name">Recall @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:19.1%;min-width:2px;background:#8a4fa0;"></div></div><span class="metric-val">19.1%</span></div><div class="metric-row"><span class="metric-name">Precision @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.3%;min-width:2px;background:#8a4fa0;"></div></div><span class="metric-val">2.3%</span></div><div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Same inputs and setup as the LSTM; slightly better, but below the tree models.</div></div></div><div class="model-card"><div class="model-header"><div class="model-tag">Ensemble</div><div class="model-name">Random Forest</div></div><div class="model-metrics"><div class="metric-row"><span class="metric-name">AUROC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:72.4%;min-width:2px;background:#1a3a6b;"></div></div><span class="metric-val">0.724</span></div><div class="metric-row"><span class="metric-name">AUPRC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.2%;min-width:2px;background:#1a3a6b;"></div></div><span class="metric-val">0.022</span></div><div class="metric-row"><span class="metric-name">Recall @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:20.8%;min-width:2px;background:#1a3a6b;"></div></div><span class="metric-val">20.8%</span></div><div class="metric-row"><span class="metric-name">Precision @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.5%;min-width:2px;background:#1a3a6b;"></div></div><span class="metric-val">2.5%</span></div><div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">100 trees, depth 8.</div></div></div><div class="model-card best"><div class="model-header"><div class="model-tag">Boosting</div><div class="model-name">XGBoost</div><div class="model-best-badge">★ Highest AUROC</div></div><div class="model-metrics"><div class="metric-row"><span class="metric-name">AUROC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:74.4%;min-width:2px;background:var(--green);"></div></div><span class="metric-val">0.744</span></div><div class="metric-row"><span class="metric-name">AUPRC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.5%;min-width:2px;background:var(--green);"></div></div><span class="metric-val">0.025</span></div><div class="metric-row"><span class="metric-name">Recall @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:23.7%;min-width:2px;background:var(--green);"></div></div><span class="metric-val">23.7%</span></div><div class="metric-row"><span class="metric-name">Precision @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.8%;min-width:2px;background:var(--green);"></div></div><span class="metric-val">2.8%</span></div><div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Best of the models tested. A modest screening signal, not a diagnostic tool.</div></div></div></div>
   <div class="two-col">
     <div class="card">
-      <div class="card-title">Model comparison — all metrics</div>
-      <div class="card-sub">Logistic Regression vs Random Forest vs XGBoost</div>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;font-size:12px;color:var(--muted);">
-        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#888;display:inline-block;"></span>Logistic Regression</span>
-        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#1a3a6b;display:inline-block;"></span>Random Forest</span>
-        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#2d6b4a;display:inline-block;"></span>XGBoost</span>
-      </div>
-      <div style="position:relative;width:100%;height:260px;"><canvas id="compChart" role="img" aria-label="Grouped bar chart comparing accuracy, precision, recall and F1 for three models">Model comparison</canvas></div>
+      <div class="card-title">Model comparison</div>
+      <div class="card-sub">AUROC (×100), recall and precision at a 5% alert rate</div>
+      <div style="position:relative;width:100%;height:260px;"><canvas id="compChart" role="img" aria-label="Grouped bar chart comparing AUROC, recall and precision for three models">Model comparison</canvas></div>
     </div>
     <div class="card">
-      <div class="card-title">XGBoost feature importance</div>
-      <div class="card-sub">Relative contribution of each feature</div>
-      <div class="feature-list">
-        <div class="feat-row"><span class="feat-name">Age</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:100%;background:var(--green);"></div></div><span class="feat-val">0.220</span></div>
-        <div class="feat-row"><span class="feat-name">Gender</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:68%;background:var(--green);opacity:.85;"></div></div><span class="feat-val">0.150</span></div>
-        <div class="feat-row"><span class="feat-name">Diastolic BP</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:43%;background:var(--blue);"></div></div><span class="feat-val">0.094</span></div>
-        <div class="feat-row"><span class="feat-name">Shock Index</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:41%;background:var(--blue);opacity:.85;"></div></div><span class="feat-val">0.091</span></div>
-        <div class="feat-row"><span class="feat-name">Pulse Pressure</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:40%;background:var(--blue);opacity:.7;"></div></div><span class="feat-val">0.087</span></div>
-        <div class="feat-row"><span class="feat-name">Mean BP</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:37%;background:var(--blue);opacity:.6;"></div></div><span class="feat-val">0.081</span></div>
-        <div class="feat-row"><span class="feat-name">Systolic BP</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:35%;background:var(--blue);opacity:.5;"></div></div><span class="feat-val">0.077</span></div>
-        <div class="feat-row"><span class="feat-name">SpO₂</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:32%;background:#888;"></div></div><span class="feat-val">0.070</span></div>
-        <div class="feat-row"><span class="feat-name">Resp. Rate</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:30%;background:#888;opacity:.8;"></div></div><span class="feat-val">0.067</span></div>
-        <div class="feat-row"><span class="feat-name">Heart Rate</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:29%;background:#888;opacity:.6;"></div></div><span class="feat-val">0.064</span></div>
-      </div>
+      <div class="card-title">Top XGBoost features (research model)</div>
+      <div class="card-sub">Importance in the 115-feature model, not this 10-feature demo</div>
+      <div class="feature-list"><div class="feat-row"><span class="feat-name">pH: hours since last measured</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:100%;background:var(--blue);"></div></div><span class="feat-val">0.060</span></div><div class="feat-row"><span class="feat-name">Max temperature, last 12 h</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:47%;background:var(--blue);"></div></div><span class="feat-val">0.028</span></div><div class="feat-row"><span class="feat-name">Lactate: hours since last measured</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:45%;background:var(--blue);"></div></div><span class="feat-val">0.027</span></div><div class="feat-row"><span class="feat-name">Min respiratory rate, last 24 h</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:37%;background:var(--blue);"></div></div><span class="feat-val">0.022</span></div><div class="feat-row"><span class="feat-name">Temperature</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:31%;background:var(--blue);"></div></div><span class="feat-val">0.018</span></div><div class="feat-row"><span class="feat-name">INR: hours since last measured</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:25%;background:var(--blue);"></div></div><span class="feat-val">0.015</span></div><div class="feat-row"><span class="feat-name">Mean temperature, last 6 h</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:23%;background:var(--blue);"></div></div><span class="feat-val">0.014</span></div><div class="feat-row"><span class="feat-name">Heart rate</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:23%;background:var(--blue);"></div></div><span class="feat-val">0.014</span></div><div class="feat-row"><span class="feat-name">Mean heart rate, last 6 h</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:23%;background:var(--blue);"></div></div><span class="feat-val">0.014</span></div><div class="feat-row"><span class="feat-name">Respiratory rate</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:21%;background:var(--blue);"></div></div><span class="feat-val">0.013</span></div></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--muted);line-height:1.6;">Several top features are “hours since last test”, which partly reflect clinicians ordering tests when worried, not only physiology.</div>
     </div>
   </div>
   <div class="analysis-box">
-    <h3>Why XGBoost is the chosen model</h3>
-    <p>In clinical sepsis detection, recall is more important than precision — a missed case is far more dangerous than a false alarm. XGBoost achieves 90% recall while matching Random Forest's accuracy (90%), dramatically outperforming it on recall (90% vs 73%). The tuned model with <em>scale_pos_weight=2.5</em> handles class imbalance effectively, making it the most clinically appropriate model in this study.</p>
+    <h3>How to read these results</h3>
+    <p>XGBoost is the best of the models tested, flagging the top 5% of hours by risk and catching about 24% of the hours before onset, with 2.8% precision (about 4.7× the 0.6% base rate). Most alerts are still false alarms, and accuracy is not informative here because always predicting “no sepsis” scores 99.4%. The demo on the Predict tab uses a simpler model with only a single snapshot of vitals, age and sex (AUROC about 0.66; at its High level, recall 15% and precision 1.9%). The LSTM and GRU read the last 24 hours of raw measurements; they overfit within a few epochs and scored below XGBoost (AUROC 0.705 and 0.715 vs 0.744). Averaging XGBoost with the GRU gave AUROC 0.747, a difference within the fold-to-fold noise, with lower AUPRC, so XGBoost remains the chosen model. The Predict tab uses the single-snapshot XGBoost model, not the LSTM or GRU. Results are internal validation on one hospital system.</p>
   </div>
 </div>
 
@@ -608,15 +563,15 @@ function renderSingleResult(r, inputs) {
   document.getElementById('s_pct').textContent = r.probability_percent.toFixed(1) + '%';
   document.getElementById('s_label').textContent = r.risk_level + ' Risk';
   document.getElementById('s_badge').className = 'risk-badge ' + level;
-  const titles = {low:'Low Sepsis Risk',moderate:'Moderate Risk',high:'High Sepsis Risk'};
+  const titles = {low:'Lower estimated risk',moderate:'Moderate estimated risk',high:'Higher estimated risk'};
   document.getElementById('s_title').textContent = titles[level];
   document.getElementById('s_prob').textContent = r.probability.toFixed(4);
-  document.getElementById('s_pred').textContent = r.prediction === 1 ? 'Sepsis' : 'No Sepsis';
+  document.getElementById('s_pred').textContent = r.prediction === 1 ? 'Flagged (High)' : 'Not flagged';
   document.getElementById('s_si').textContent = (inputs.heart_rate / (inputs.systolic_bp + 1)).toFixed(3);
   document.getElementById('s_pp').textContent = (inputs.systolic_bp - inputs.diastolic_bp).toFixed(0) + ' mmHg';
-  const verdicts = {low:'Vital signs are within acceptable ranges.',moderate:'Some indicators suggest elevated risk. Clinical reassessment recommended.',high:'Critical risk detected. Immediate clinical evaluation required.'};
+  const verdicts = {low:'Estimated risk is below this demo\'s alert levels.',moderate:'Estimated risk is higher than typical for ICU hours (top 20% of scores).',high:'Estimated risk is in the top 5% of ICU hours. This is not a diagnosis.'};
   document.getElementById('s_verdict').textContent = verdicts[level];
-  const msgs = {low:'Patient appears stable. Maintain monitoring and document baseline vitals.',moderate:'Recommend reassessment within 2 hours. Check lactate, CBC, blood cultures.',high:'SEPSIS ALERT: Initiate Hour-1 Bundle. Blood cultures ×2, IV fluids 30 mL/kg, broad-spectrum antibiotics, lactate.'};
+  const msgs = {low:'Research demo. This output does not replace clinical judgment.',moderate:'Research demo. Interpret only with clinical assessment; this tool cannot confirm or exclude sepsis.',high:'Research demo alert. Most such alerts are false alarms (about 2% of flagged hours precede onset). Not for patient care.'};
   const icons = {low:'✅',moderate:'⚠️',high:'🚨'};
   const alertEl = document.getElementById('s_alert');
   alertEl.className = 'result-alert ' + level;
@@ -632,19 +587,20 @@ function buildFinalVerdict(preds) {
   const rising = probs[probs.length-1] > probs[0];
   const sepsisCount = preds.filter(p => p.risk_level === 'High').length;
   let level;
-  if (peak >= 65 || (peak >= 50 && rising)) level = 'high';
-  else if (peak >= 35 || avg >= 28) level = 'moderate';
+  const nMod = preds.filter(p => p.risk_level === 'Moderate').length;
+  if (sepsisCount > 0) level = 'high';
+  else if (nMod > 0) level = 'moderate';
   else level = 'low';
   const configs = {
-    low: { icon:'✅', sub:'Overall Assessment', title:'Low Sepsis Risk — Patient Stable',
-      desc:'Vital signs across all time points remain within acceptable clinical ranges. No significant deterioration observed.',
-      actions:'Continue routine monitoring every 4–6 hours. Reassess if vitals change or symptoms develop.' },
-    moderate: { icon:'⚠️', sub:'Overall Assessment', title:'Moderate Risk — Clinical Attention Required',
-      desc:'One or more readings show elevated sepsis probability' + (rising ? ', with a worsening trend over time.' : '. Trend is not yet clearly escalating, but warrants close observation.'),
-      actions:'Reassess within 2 hours. Order: lactate, CBC, CMP, blood cultures ×2. Ensure IV access.' },
-    high: { icon:'🚨', sub:'URGENT — Overall Assessment', title:'High Sepsis Risk — Immediate Action',
-      desc:'Multiple readings indicate critical sepsis probability' + (rising ? ', with a rapidly escalating trend.' : '. Peak risk is critically high.') + ' Immediate intervention is warranted.',
-      actions:'INITIATE HOUR-1 BUNDLE: Blood cultures ×2 → IV antibiotics (broad-spectrum) → IV fluids 30 mL/kg → Measure lactate → Vasopressors if MAP < 65 mmHg' }
+    low: { icon:'✅', sub:'Overall Assessment (research demo)', title:'Lower estimated risk',
+      desc:'No reading reached this demo\'s alert levels.',
+      actions:'This tool cannot rule out sepsis. It does not replace clinical judgment.' },
+    moderate: { icon:'⚠️', sub:'Overall Assessment (research demo)', title:'Moderate estimated risk',
+      desc:'One or more readings are in the top 20% of scores' + (rising ? ', with an upward trend across the readings.' : '.'),
+      actions:'For illustration only. Decisions should rest on clinical assessment, not on this tool.' },
+    high: { icon:'🚨', sub:'Overall Assessment (research demo)', title:'Higher estimated risk',
+      desc:'One or more readings are in the top 5% of scores' + (rising ? ', with an upward trend across the readings.' : '.') + ' This is not a diagnosis.',
+      actions:'Most such alerts are false alarms (about 2% of flagged hours precede onset). Not for patient care.' }
   };
   const c = configs[level];
   return { level, html: `
@@ -797,7 +753,7 @@ function renderTemporalResult(preds, prefix) {
   if (peakEl) peakEl.textContent = peak.toFixed(1) + '%';
   if (avgEl)  avgEl.textContent  = avg.toFixed(1) + '%';
   const peakStat = document.getElementById(prefix + '_peak_stat');
-  if (peakStat) peakStat.className = 't-stat ' + (peak >= 65 ? 'danger' : peak >= 35 ? 'warn' : 'safe');
+  if (peakStat) peakStat.className = 't-stat ' + (sepsisCount > 0 ? 'danger' : preds.some(p => p.risk_level === 'Moderate') ? 'warn' : 'safe');
   if (prefix === 't') {
     document.getElementById('t_trend_val').textContent = rising ? '↑ Rising' : '↓ Falling';
     document.getElementById('t_trend_stat').className = 't-stat ' + (rising ? 'danger' : 'safe');
@@ -914,16 +870,18 @@ function initCompChart() {
   compChartObj = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['Accuracy','Precision','Recall','F1-score'],
+      labels: ['AUROC (×100)','Recall @5% alerts (%)','Precision @5% alerts (%)'],
       datasets: [
-        {label:'Logistic Regression', data:[61,42,63,50], backgroundColor:'#888780', borderRadius:4},
-        {label:'Random Forest',       data:[90,92,73,82], backgroundColor:'#1a3a6b', borderRadius:4},
-        {label:'XGBoost',             data:[90,80,90,84], backgroundColor:'#2d6b4a', borderRadius:4}
+        {label:'Logistic Regression', data:[70.2,16.9,2.0], backgroundColor:'#888780', borderRadius:4},
+        {label:'LSTM',                data:[70.5,18.5,2.2], backgroundColor:'#b5651d', borderRadius:4},
+        {label:'GRU',                 data:[71.5,19.1,2.3], backgroundColor:'#8a4fa0', borderRadius:4},
+        {label:'Random Forest',       data:[72.4,20.8,2.5], backgroundColor:'#1a3a6b', borderRadius:4},
+        {label:'XGBoost',             data:[74.4,23.7,2.8], backgroundColor:'#2d6b4a', borderRadius:4}
       ]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false} },
+      plugins:{ legend:{display:true, position:'bottom'} },
       scales:{
         x:{grid:{display:false}, ticks:{font:{family:'Inter',size:12}}},
         y:{min:0,max:100, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{callback:v=>v+'%',font:{size:11}}}
@@ -940,5 +898,3 @@ addTableRow(); addTableRow(); addTableRow();
 </script>
 </body>
 </html>
-HTMLEOF
-echo "Done"

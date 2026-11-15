@@ -1,28 +1,11 @@
-# 🧠 Sepsis Risk Prediction
+Personalized Risk Prediction using Deep Learning Models - Sepsis (MIMIC-IV)
 
-This project focuses on predicting sepsis risk using ICU patient data from the MIMIC-IV dataset.
+Predicts, at every ICU hour, whether a patient will reach Sepsis-3 onset within the next 6 hours, using vitals and labs from MIMIC-IV (v3.1). Models: Logistic Regression, Random Forest, XGBoost (baselines), LSTM / GRU, and an XGBoost+GRU ensemble.
 
----
+Project layout src/data_pull/pull_from_bigquery.py 1. download raw tables from BigQuery (run in Google Colab) src/preprocessing/preprocess_sepsis3.py 2. build the hourly, time-aligned dataset -> data/processed/sepsis3_dataset.parquet src/models/baseline_sepsis3.py 3. LogReg / RandForest / XGBoost, patient-level 5-fold CV src/models/train_lstm.py 4. LSTM / GRU on the last 24 hours, same folds and metrics train_app_model.py 5. model + calibration + risk cut-offs for the demo web app predict.py, app.py, templates/ demo web app (Flask) Data (not included)
 
-## 📌 Overview
+MIMIC-IV is credentialed data. Do not commit or share it (the PhysioNet data use agreement forbids it); each team member needs their own PhysioNet access. Run src/data_pull/pull_from_bigquery.py in Colab, download the files into data/raw/, and everything else is rebuilt from them.
 
-Currently, the project is in the **data preprocessing phase**, where raw clinical data is being transformed into a structured format suitable for machine learning.
+Run order (from the project root) pip install -r requirements.txt python src/preprocessing/preprocess_sepsis3.py python src/models/baseline_sepsis3.py # add --no-labs, --basic or --no-timing for ablations python src/models/train_lstm.py # LSTM and GRU python src/models/ensemble.py --dir preds --members XGBoost,gru # after saving predictions (see below) python train_app_model.py # then: python app.py Evaluation protocol Every split is by patient (subject_id): 5-fold GroupKFold. A row-level split leaks patients between train and test and inflated AUROC from ~0.57 to ~0.92 in an earlier version of this project. Only 0.6% of rows are positive, so we report AUROC, AUPRC and recall at a 5% alert rate, not accuracy. Random guessing gives AUPRC 0.006 and recall 0.05. Training uses all positives plus 20x random negatives; test folds are always complete. Labs are usable 1 hour after the draw, vitals and labs are forward-filled only, and statistics are fitted on training data. Results (patient-level 5-fold CV; 65,400 ICU stays, 2,781 positive patients) Model Features AUROC AUPRC Recall @ 5% alerts Logistic Regression all (115) 0.702 0.0141 0.169 Random Forest all (115) 0.726 0.0226 0.211 XGBoost all (115) 0.745 0.0242 0.235 XGBoost vitals only (76) 0.711 0.0211 0.202 XGBoost basic vitals + labs (54) 0.736 0.0239 0.228 LSTM last 24h sequence (42 raw features) 0.705 0.0160 0.185 GRU last 24h sequence (42 raw features) 0.715 0.0164 0.191 XGBoost + GRU (rank average) - 0.747 0.0216 0.231 Fold-to-fold spread is about +-0.012 to 0.015 AUROC, so differences below ~0.01 are ties. LSTM and GRU overfit within 1-3 epochs and did not beat XGBoost; the XGBoost+GRU ensemble gain (+0.003 AUROC, mixed sign across folds) is within noise, with lower AUPRC. To save per-fold predictions for ensembling: baseline_sepsis3.py --models XGBoost,RandForest --save-preds preds; train_lstm.py --model both --out preds. These files contain row-level data derived from MIMIC and are git-ignored; do not share them.
 
----
-
-## 📊 Data Used
-
-- Patient demographics  
-- Hospital admissions  
-- ICU stays  
-- Diagnosis codes (for sepsis labeling)  
-- Vital signs from chart events  
-
----
-
-## ⚙️ Current Progress
-
-- Extracted vital signs from raw ICU event data  
-- Generated sepsis labels using ICD codes  
-- Merged multiple tables into a single dataset  
-- Handling missing values and sparse time-series data  
+Limitations Absolute performance is modest; at a 5% alert rate most alerts are false. "Hours since last lab" features partly reflect clinician suspicion, not only physiology. Sepsis-3 onset is based on suspected-infection time, which is itself imprecisely recorded. The demo app sees a single snapshot of vitals (no history or labs; AUROC ~0.66) and is weaker than the research models. It is a research demo, not a medical device, and must not be used for patient care. Internal validation only (one hospital system, MIMIC-IV); no per-patient evaluation yet.

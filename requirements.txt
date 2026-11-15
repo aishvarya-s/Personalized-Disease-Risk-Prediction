@@ -1,6 +1,9 @@
+# Install the SAME xgboost / scikit-learn / numpy versions that train_app_model.py used,
+# because the model is a pickle. On the training machine run:  pip freeze | grep -i -E "xgboost|scikit-learn|numpy|pandas"
+# and replace the lines below with those exact versions (e.g. xgboost==X.Y.Z).
+flask
+gunicorn
+xgboost
+scikit-learn
 pandas
 numpy
-scikit-learn
-matplotlib
-seaborn
-xgboost

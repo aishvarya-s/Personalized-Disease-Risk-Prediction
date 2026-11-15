@@ -123,7 +123,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
 #csv-file-input{display:none;}
 
 /* TEMPORAL + CSV RESULT */
-.temporal-result{display:none;margin-top:24px;animation:fadeIn .35s ease;}
+.temporal-result{display:none;margin-top:24px;animation:fadeIn .35s ease;transition:opacity .2s;}
 
 /* ===== FINAL VERDICT BOX (shared for temporal + csv) ===== */
 .final-verdict{border-radius:16px;padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;gap:28px;animation:fadeIn .4s ease;}
@@ -197,6 +197,32 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
 .analysis-box h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--green);margin-bottom:12px;letter-spacing:-.3px;}
 .analysis-box p{font-size:14px;color:#1d4a2f;line-height:1.75;}
 
+/* FLOATING AI HEALTH ASSISTANT */
+.chat-launcher{position:fixed;right:26px;bottom:24px;z-index:1000;border:0;border-radius:999px;padding:14px 19px;background:var(--accent);color:#fff;font:600 13px 'Inter',sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.2);cursor:pointer;display:flex;align-items:center;gap:9px;}
+.chat-launcher:hover{transform:translateY(-2px);}
+.chat-section{display:none;position:fixed;right:0;top:60px;bottom:0;z-index:1001;width:min(430px,100vw);height:calc(100vh - 60px);background:var(--surface);border:1px solid var(--border);border-right:0;border-bottom:0;border-radius:18px 0 0 0;overflow:hidden;box-shadow:-16px 0 48px rgba(0,0,0,.14);flex-direction:column;animation:chatSlideIn .22s ease;}
+@keyframes chatSlideIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+.chat-section.open{display:flex;}
+.chat-header{padding:17px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.chat-heading{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;}
+.chat-subtitle{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;}
+.chat-header-actions{display:flex;align-items:center;gap:8px;}
+.chat-context{font-family:var(--mono);font-size:9px;color:var(--green);background:var(--green-bg);padding:6px 8px;border-radius:8px;white-space:nowrap;}
+.chat-close{border:0;background:transparent;color:var(--muted);font-size:22px;cursor:pointer;padding:2px 6px;}
+.chat-disclaimer{margin:12px 14px 0;padding:9px 10px;border-radius:8px;background:var(--amber-bg);color:#5c3600;font-size:10px;line-height:1.5;}
+.chat-messages{padding:16px;flex:1;min-height:120px;overflow-y:auto;display:flex;flex-direction:column;gap:11px;}
+.chat-message{max-width:90%;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;}
+.chat-message.assistant{align-self:flex-start;background:var(--surface2);color:var(--text);border-bottom-left-radius:4px;}
+.chat-message.user{align-self:flex-end;background:var(--accent);color:white;border-bottom-right-radius:4px;}
+.chat-message.error{background:var(--red-bg);color:var(--red);}
+.chat-input-row{padding:12px 14px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;}
+.chat-input{flex:1;min-height:43px;max-height:100px;resize:vertical;padding:10px 11px;border:1px solid var(--border);border-radius:10px;background:var(--surface2);font:12px 'Inter',sans-serif;color:var(--text);outline:none;}
+.chat-input:focus{border-color:var(--green);background:white;}
+.chat-send{padding:12px 14px;border:0;border-radius:10px;background:var(--accent);color:white;font:500 12px 'Inter',sans-serif;cursor:pointer;min-width:68px;}
+.chat-send:disabled{opacity:.5;cursor:not-allowed;}
+.chat-empty{font-size:12px;color:var(--muted);line-height:1.6;padding:4px 0;}
+@media(max-width:600px){.chat-launcher{right:14px;bottom:14px;padding:12px 15px}.chat-section{top:0;right:0;bottom:0;width:100vw;height:100dvh;border-radius:0;border:0}.chat-header{padding-top:max(17px,env(safe-area-inset-top))}.chat-input-row{padding-bottom:max(14px,env(safe-area-inset-bottom))}}
+
 @media(max-width:900px){
   .stat-grid{grid-template-columns:1fr 1fr;}
   .predict-layout{grid-template-columns:1fr;}
@@ -206,6 +232,14 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
   .section{padding:32px 20px;}
   .final-verdict{flex-wrap:wrap;gap:16px;}
   .fv-right{min-width:unset;width:100%;}
+}
+
+/* Chat panel pushes the page aside on desktop instead of covering it */
+body{transition:padding-right .22s ease;}
+.chat-launcher.hidden{display:none;}
+@media(min-width:901px){
+  body.chat-open{padding-right:430px;}
+  .chat-section{top:0;height:100vh;border-radius:0;}
 }
 </style>
 </head>
@@ -334,7 +368,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
         <div>
           <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:600;">Patient readings over time</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:3px;">Type directly into the table — press Tab to move between cells. Add rows as needed.</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">Type directly into the table — press Tab to move between cells. Add rows as needed, then click Analyse.</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <span style="font-family:var(--mono);font-size:12px;color:var(--green);background:var(--green-bg);padding:5px 12px;border-radius:8px;" id="t_count">0 readings</span>
@@ -444,6 +478,8 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
       </div>
     </div>
   </div>
+
+
 </div>
 
 <!-- ===== MODELS ===== -->
@@ -517,6 +553,133 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
 </div>
 
 <script>
+// ===== AI HEALTH ASSISTANT =====
+let latestPatientContext = null;
+let chatHistory = [];   // sent to the backend (role/content pairs)
+let chatLog = [];       // what's shown on screen (persisted)
+const CHAT_KEY = 'sepsisguard_chat_v1';
+
+function saveChat() {
+  try {
+    sessionStorage.setItem(CHAT_KEY, JSON.stringify({log: chatLog, history: chatHistory, ctx: latestPatientContext}));
+  } catch (e) {}
+}
+
+function loadChat() {
+  try {
+    const s = JSON.parse(sessionStorage.getItem(CHAT_KEY) || 'null');
+    if (!s) return;
+    chatHistory = s.history || [];
+    latestPatientContext = s.ctx || null;
+    document.getElementById('chat-context-label').textContent = latestPatientContext ? 'PREDICTION READY' : 'GENERAL CHAT';
+    (s.log || []).forEach(m => addChatMessage(m.role, m.content, false, false));
+    chatLog = s.log || [];
+  } catch (e) {}
+}
+window.addEventListener('DOMContentLoaded', loadChat);
+
+function toggleChat(forceOpen) {
+  const panel = document.getElementById('chat-section');
+  const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !panel.classList.contains('open');
+  panel.classList.toggle('open', shouldOpen);
+  document.body.classList.toggle('chat-open', shouldOpen);
+  const launcher = document.getElementById('chat-launcher');
+  launcher.classList.toggle('hidden', shouldOpen);
+  launcher.setAttribute('aria-expanded', String(shouldOpen));
+  if (shouldOpen) window.setTimeout(() => document.getElementById('chat-input').focus(), 80);
+}
+
+function resetChatMessages() {
+  chatHistory = [];
+  chatLog = [];
+  const messagesEl = document.getElementById('chat-messages');
+  messagesEl.innerHTML = '';
+  const welcome = document.createElement('div');
+  welcome.className = 'chat-empty';
+  welcome.textContent = latestPatientContext
+    ? 'Your latest SepsisGuard prediction is available as context. You can ask about the model score, vital signs, or general health topics.'
+    : "Hi! I'm your AI Health Assistant. Ask me general questions about health, nutrition, symptoms, or wellness.";
+  messagesEl.appendChild(welcome);
+}
+
+function setChatContext(context, resetConversation) {
+  latestPatientContext = context;
+  document.getElementById('chat-context-label').textContent = context ? 'PREDICTION READY' : 'GENERAL CHAT';
+  if (resetConversation) resetChatMessages();
+  saveChat();
+}
+
+function formatChat(text) {
+  const esc = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return esc.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
+
+function addChatMessage(role, content, isError, persist = true) {
+  const messagesEl = document.getElementById('chat-messages');
+  const empty = messagesEl.querySelector('.chat-empty');
+  if (empty) empty.remove();
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-message ' + role + (isError ? ' error' : '');
+  if (role === 'assistant' && !isError) bubble.innerHTML = formatChat(content);
+  else bubble.textContent = content;
+  messagesEl.appendChild(bubble);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  if (persist && !isError) { chatLog.push({role, content}); saveChat(); }
+  return bubble;
+}
+
+function handleChatKeydown(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendChat();
+  }
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const button = document.getElementById('chat-send');
+  const message = input.value.trim();
+  if (!message || button.disabled) return;
+
+  addChatMessage('user', message);
+  input.value = '';
+  input.disabled = true;
+  button.disabled = true;
+  button.textContent = '...';
+  const loadingBubble = addChatMessage('assistant', 'Thinking...', false, false);
+
+  try {
+    const response = await fetch('/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        message,
+        patient_context: latestPatientContext || {},
+        history: chatHistory
+      })
+    });
+    const data = await response.json();
+    loadingBubble.remove();
+    if (!response.ok || !data.success) throw new Error(data.error || 'The chatbot request failed.');
+    chatHistory.push({role: 'user', content: message});
+    chatHistory.push({role: 'assistant', content: data.reply});
+    addChatMessage('assistant', data.reply);   // also saves chatLog + chatHistory
+  } catch (error) {
+    loadingBubble.remove();
+    addChatMessage('assistant', error.message, true);
+  } finally {
+    input.disabled = false;
+    button.disabled = false;
+    button.textContent = 'Send ↗';
+    input.focus();
+  }
+}
+
+function newChat() {
+  resetChatMessages();   // clears the screen, chatLog and chatHistory
+  saveChat();            // overwrite the saved copy with the empty chat
+}
+
 // ===== NAV =====
 function showSection(name, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -589,7 +752,7 @@ function loadTemporalPreset(type) {
   rows.forEach(r => addTableRow(r));
   updateCount();
 
-  // Auto-run after a short delay
+  // Auto-run after a short delay (clicking a scenario button is an explicit action)
   setTimeout(() => runTemporal(true), 200);
 }
 
@@ -615,7 +778,18 @@ async function runSingle() {
   finally { btn.textContent = 'Run Sepsis Analysis →'; btn.classList.remove('loading'); }
 }
 
+function askAbout(question) {
+  if (!latestPatientContext) {
+    addChatMessage('assistant', 'Run a prediction first, then I can explain it.', false, false);
+    return;
+  }
+  document.getElementById('chat-input').value = question;
+  sendChat();
+}
+
 function renderSingleResult(r, inputs) {
+  // false = keep the existing chat conversation, just update the prediction context
+  setChatContext({mode:'single', patient:inputs, prediction:r}, false);
   document.getElementById('s_placeholder').style.display = 'none';
   const card = document.getElementById('s_result');
   card.style.display = 'block';
@@ -631,7 +805,7 @@ function renderSingleResult(r, inputs) {
   document.getElementById('s_pp').textContent = (inputs.systolic_bp - inputs.diastolic_bp).toFixed(0) + ' mmHg';
   const verdicts = {low:'Vital signs are within acceptable ranges.',moderate:'Some indicators suggest elevated risk. Clinical reassessment recommended.',high:'Critical risk detected. Immediate clinical evaluation required.'};
   document.getElementById('s_verdict').textContent = verdicts[level];
-  const msgs = {low:'Patient appears stable. Maintain monitoring and document baseline vitals.',moderate:'Recommend reassessment within 2 hours. Check lactate, CBC, blood cultures.',high:'SEPSIS ALERT: Initiate Hour-1 Bundle. Blood cultures ×2, IV fluids 30 mL/kg, broad-spectrum antibiotics, lactate.'};
+  const msgs = {low:'The model assigned a relatively lower score. This does not rule out sepsis; continue to follow the treating clinician’s monitoring plan.',moderate:'The model assigned an intermediate score. Consider timely review by the treating healthcare professional, taking symptoms and the full clinical picture into account.',high:'The model assigned a high score. Prompt assessment by a qualified healthcare professional is important. Do not use this score alone to make treatment decisions.'};
   const icons = {low:'✅',moderate:'⚠️',high:'🚨'};
   const alertEl = document.getElementById('s_alert');
   alertEl.className = 'result-alert ' + level;
@@ -659,21 +833,21 @@ function buildFinalVerdict(preds) {
       sub: 'Overall Assessment',
       title: 'Low Sepsis Risk — Patient Stable',
       desc: 'Vital signs across all time points remain within acceptable clinical ranges. No significant deterioration observed.',
-      actions: 'Continue routine monitoring every 4–6 hours. Reassess if vitals change or symptoms develop.'
+      actions: 'A lower model score does not rule out sepsis. Continue monitoring according to the treating clinician’s instructions and reassess if the patient’s condition changes.'
     },
     moderate: {
       icon: '⚠️',
       sub: 'Overall Assessment',
       title: 'Moderate Risk — Clinical Attention Required',
       desc: 'One or more readings show elevated sepsis probability' + (rising ? ', with a worsening trend over time.' : '. Trend is not yet clearly escalating, but warrants close observation.'),
-      actions: 'Reassess within 2 hours. Order: lactate, CBC, CMP, blood cultures ×2. Ensure IV access.'
+      actions: 'Arrange timely review by the treating healthcare professional. Interpret the trend alongside symptoms, examination, and other clinical information.'
     },
     high: {
       icon: '🚨',
       sub: 'URGENT — Overall Assessment',
       title: 'High Sepsis Risk — Immediate Action',
       desc: 'Multiple readings indicate critical sepsis probability' + (rising ? ', with a rapidly escalating trend.' : '. Peak risk is critically high.') + ' Immediate intervention is warranted.',
-      actions: 'INITIATE HOUR-1 BUNDLE: Blood cultures ×2 → IV antibiotics (broad-spectrum) → IV fluids 30 mL/kg → Measure lactate → Vasopressors if MAP < 65 mmHg'
+      actions: 'Prompt assessment by a qualified healthcare professional is important. Any treatment or investigations must be decided by the treating clinical team.'
     }
   };
 
@@ -710,7 +884,6 @@ function buildFinalVerdict(preds) {
 // ===== TEMPORAL TABLE =====
 let tChart = null;
 let rowCount = 0;
-let autoUpdateTimer = null;
 
 function cellStyle(type) {
   const base = 'width:100%;border:none;outline:none;background:transparent;font-family:\'JetBrains Mono\',monospace;font-size:12px;color:var(--text);padding:2px 4px;';
@@ -787,13 +960,12 @@ function getValidRows() {
   return rows;
 }
 
+// No more auto-prediction while typing. Just update the row count and
+// dim the old results so it's clear they're out of date until you click Analyse.
 function scheduleAutoUpdate() {
   updateCount();
-  clearTimeout(autoUpdateTimer);
-  const rows = getValidRows();
-  if (rows.length < 2) return;
-  document.getElementById('t_count').textContent += ' — updating...';
-  autoUpdateTimer = setTimeout(() => runTemporal(true), 800);
+  const r = document.getElementById('t_result');
+  if (r.style.display === 'block') r.style.opacity = '.45';
 }
 
 function clearReadings() {
@@ -801,6 +973,7 @@ function clearReadings() {
   rowCount = 0;
   updateCount();
   document.getElementById('t_result').style.display = 'none';
+  setChatContext(null, false);
   addTableRow(); addTableRow(); addTableRow();
 }
 
@@ -818,12 +991,43 @@ async function runTemporal(silent) {
     const preds = results.map((d, i) => ({...readings[i], ...d.result}));
     renderTemporalResult(preds, 't');
   } catch(e) { if (!silent) alert('Error: ' + e.message); }
-  finally { btn.textContent = 'Analyse →'; btn.disabled = false; }
+  finally { btn.textContent = 'Analyse →'; btn.disabled = false; updateCount(); }
 }
 
 function renderTemporalResult(preds, prefix) {
+  const contextProbabilities = preds.map(p => Number(p.probability_percent));
+  const contextPeak = Math.max(...contextProbabilities);
+  const contextAverage = contextProbabilities.reduce((sum, value) => sum + value, 0) / contextProbabilities.length;
+  const contextRising = contextProbabilities[contextProbabilities.length - 1] > contextProbabilities[0];
+  const contextVerdict = buildFinalVerdict(preds);
+  const contextReadings = preds.slice(-20).map(p => ({
+    time: p.time,
+    heart_rate: p.hr,
+    systolic_bp: p.sbp,
+    diastolic_bp: p.dbp,
+    mean_bp: p.mbp,
+    respiratory_rate: p.rr,
+    spo2: p.spo2,
+    age: p.age,
+    gender: p.gender,
+    probability_percent: p.probability_percent,
+    risk_level: p.risk_level
+  }));
+  // false = keep the existing chat conversation, just update the prediction context
+  setChatContext({
+    mode: prefix === 'csv' ? 'csv' : 'temporal',
+    overall_model_category: contextVerdict.level,
+    peak_model_score_percent: Number(contextPeak.toFixed(1)),
+    average_model_score_percent: Number(contextAverage.toFixed(1)),
+    trend: contextRising ? 'rising' : 'falling_or_unchanged',
+    high_category_readings: preds.filter(p => p.risk_level === 'High').length,
+    total_readings: preds.length,
+    readings: contextReadings
+  }, false);
+
   const resultEl = document.getElementById(prefix + '_result');
   resultEl.style.display = 'block';
+  resultEl.style.opacity = '1';
 
   const probs = preds.map(p => p.probability_percent);
   const peak  = Math.max(...probs);
@@ -940,8 +1144,15 @@ function handleCSV(file) {
         ));
         const preds = results.map((d, i) => ({
           time: rows[i].time || rows[i].charttime || rows[i].timestamp || (i+1),
-          hr: parseFloat(rows[i].heart_rate), sbp: parseFloat(rows[i].systolic_bp),
-          spo2: parseFloat(rows[i].spo2), ...d.result
+          hr: parseFloat(rows[i].heart_rate),
+          sbp: parseFloat(rows[i].systolic_bp),
+          dbp: parseFloat(rows[i].diastolic_bp),
+          mbp: parseFloat(rows[i].mean_bp),
+          rr: parseFloat(rows[i].respiratory_rate),
+          spo2: parseFloat(rows[i].spo2),
+          age: parseFloat(rows[i].age),
+          gender: parseInt(rows[i].gender),
+          ...d.result
         }));
         renderTemporalResult(preds, 'csv');
       } catch(e) { alert('Prediction error: ' + e.message); }
@@ -994,5 +1205,33 @@ function hideErr(id) { document.getElementById(id).style.display = 'none'; }
 // init 3 empty rows on load
 addTableRow(); addTableRow(); addTableRow();
 </script>
+
+<!-- GLOBAL FLOATING AI HEALTH ASSISTANT -->
+<button class="chat-launcher" id="chat-launcher" onclick="toggleChat()" aria-label="Open AI Health Assistant">✦ AI Health Assistant</button>
+<div class="chat-section" id="chat-section" role="dialog" aria-label="AI Health Assistant" aria-modal="false">
+  <div class="chat-header">
+    <div>
+      <div class="chat-heading">AI Health Assistant</div>
+      <div class="chat-subtitle">Ask general health questions or discuss a SepsisGuard prediction.</div>
+    </div>
+    <div class="chat-header-actions">
+      <button class="chat-close" onclick="newChat()" aria-label="New chat" title="New chat" style="font-size:12px;font-family:'Inter',sans-serif;border:1px solid var(--border);border-radius:8px;padding:5px 9px;">+ New</button>
+      <span class="chat-context" id="chat-context-label">GENERAL CHAT</span>
+      <button class="chat-close" onclick="toggleChat(false)" aria-label="Close chat">×</button>
+    </div>
+  </div>
+  <div class="chat-disclaimer">Educational information only. This assistant cannot diagnose conditions or replace advice from a qualified healthcare professional.</div>
+  <div class="chat-messages" id="chat-messages" aria-live="polite">
+    <div class="chat-empty">Hi! I'm your AI Health Assistant. You can ask me general questions about health, nutrition, symptoms, or wellness. If you run a SepsisGuard prediction, I can also help explain its results.</div>
+  </div>
+    <div style="padding:0 14px 8px;">
+    <button onclick="askAbout('Explain my latest result briefly.')" style="font-size:11px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;color:var(--text);font-family:'Inter',sans-serif;">✦ Explain my result</button>
+  </div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chat-input" rows="2" maxlength="2000" placeholder="Ask a health question..." onkeydown="handleChatKeydown(event)"></textarea>
+    <button class="chat-send" id="chat-send" onclick="sendChat()">Send ↗</button>
+  </div>
+</div>
+
 </body>
 </html>

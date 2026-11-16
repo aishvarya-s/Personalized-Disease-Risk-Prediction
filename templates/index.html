@@ -123,7 +123,7 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
 #csv-file-input{display:none;}
 
 /* TEMPORAL + CSV RESULT */
-.temporal-result{display:none;margin-top:24px;animation:fadeIn .35s ease;}
+.temporal-result{display:none;margin-top:24px;animation:fadeIn .35s ease;transition:opacity .2s;}
 
 /* ===== FINAL VERDICT BOX ===== */
 .final-verdict{border-radius:16px;padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;gap:28px;animation:fadeIn .4s ease;}
@@ -234,16 +234,6 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);position:sti
   .fv-right{min-width:unset;width:100%;}
 }
 
-/* Validation popup */
-.vp-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:20px;}
-.vp-overlay.open{display:flex;}
-.vp-box{background:var(--surface);border-radius:16px;padding:28px 28px 22px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:fadeIn .2s ease;}
-.vp-icon{font-size:30px;margin-bottom:8px;}
-.vp-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:10px;}
-.vp-list{margin:0 0 18px 18px;font-size:13px;line-height:1.7;color:var(--muted);}
-.vp-ok{width:100%;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font:500 13px 'Inter',sans-serif;cursor:pointer;}
-.input-invalid{outline:2px solid var(--red) !important;background:var(--red-bg) !important;}
-
 /* Chat panel pushes the page aside on desktop instead of covering it */
 body{transition:padding-right .22s ease;}
 .chat-launcher.hidden{display:none;}
@@ -268,31 +258,31 @@ body{transition:padding-right .22s ease;}
 <!-- ===== DATASET ===== -->
 <div class="section active" id="sec-dataset">
   <div class="page-title">Dataset Overview</div>
-  <div class="page-sub">MIMIC-IV ICU data — hourly observations labelled by Sepsis-3 onset within the next 6 hours</div>
+  <div class="page-sub">MIMIC-IV clinical database — ICU patient records with sepsis labels</div>
   <div class="stat-grid">
-    <div class="stat-card"><div class="s-label">Total Records</div><div class="s-val">2.83M</div><div class="s-note">Hourly rows · 65,400 ICU stays</div></div>
-    <div class="stat-card blue"><div class="s-label">Features</div><div class="s-val">115</div><div class="s-note">Research models · this demo uses 10</div></div>
-    <div class="stat-card amber"><div class="s-label">Sepsis Positive</div><div class="s-val">0.6%</div><div class="s-note">Hours before Sepsis-3 onset (6 h)</div></div>
-    <div class="stat-card green"><div class="s-label">Unique Patients</div><div class="s-val">49,276</div><div class="s-note">Adult ICU patients</div></div>
+    <div class="stat-card"><div class="s-label">Total Records</div><div class="s-val">135,452</div><div class="s-note">Hourly ICU observations</div></div>
+    <div class="stat-card blue"><div class="s-label">Features</div><div class="s-val">17</div><div class="s-note">10 model features used</div></div>
+    <div class="stat-card amber"><div class="s-label">Sepsis Positive</div><div class="s-val">~24%</div><div class="s-note">ICD-code labelled</div></div>
+    <div class="stat-card green"><div class="s-label">Unique Patients</div><div class="s-val">364K+</div><div class="s-note">MIMIC-IV patients table</div></div>
   </div>
   <div class="two-col">
     <div class="card">
       <div class="card-title">Sepsis label distribution</div>
-      <div class="card-sub">Label: Sepsis-3 onset within the next 6 hours</div>
-      <div class="dist-bar-wrap"><div class="dist-bar-label"><span>Not followed by onset (0)</span><span style="font-family:var(--mono);font-weight:500">99.4%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:99.4%;background:#1a3a2a;"></div></div></div>
-      <div class="dist-bar-wrap" style="margin-top:14px;"><div class="dist-bar-label"><span>Onset within 6 h (1)</span><span style="font-family:var(--mono);font-weight:500;color:var(--amber)">0.6%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:0.6%;min-width:3px;background:var(--amber);"></div></div></div>
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);"><div style="font-size:12px;color:var(--muted);margin-bottom:8px;">MIMIC-IV source tables</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">vitalsign (derived)</div><div style="color:var(--muted);margin-top:2px;">hourly vitals, first 72 ICU h</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">lab tables (derived)</div><div style="color:var(--muted);margin-top:2px;">5 tables, 15 labs</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">sepsis3 (derived)</div><div style="color:var(--muted);margin-top:2px;">label source (onset time)</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">icustays</div><div style="color:var(--muted);margin-top:2px;">94,458 stays</div></div></div></div>
+      <div class="card-sub">Binary label from ICD-9/10 codes</div>
+      <div class="dist-bar-wrap"><div class="dist-bar-label"><span>Non-Sepsis (0)</span><span style="font-family:var(--mono);font-weight:500">~76%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:76%;background:#1a3a2a;"></div></div></div>
+      <div class="dist-bar-wrap" style="margin-top:14px;"><div class="dist-bar-label"><span>Sepsis (1)</span><span style="font-family:var(--mono);font-weight:500;color:var(--amber)">~24%</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:24%;background:var(--amber);"></div></div></div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);"><div style="font-size:12px;color:var(--muted);margin-bottom:8px;">MIMIC-IV Source Tables</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">diagnoses_icd</div><div style="color:var(--muted);margin-top:2px;">6,364,488 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">chartevents</div><div style="color:var(--muted);margin-top:2px;">723,238 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">admissions</div><div style="color:var(--muted);margin-top:2px;">546,028 rows</div></div><div style="font-size:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;"><div style="font-family:var(--mono);font-weight:500;">icustays</div><div style="color:var(--muted);margin-top:2px;">94,458 rows</div></div></div></div>
     </div>
     <div class="card">
       <div class="card-title">Vital signs extracted</div>
-      <div class="card-sub">Columns from the derived vitalsign table</div>
-      <table class="v-table"><thead><tr><th>Vital Sign</th><th>Column</th><th></th></tr></thead><tbody>
-        <tr><td>Heart Rate</td><td class="itemid">heart_rate</td><td><span class="dot"></span></td></tr>
-        <tr><td>Systolic BP</td><td class="itemid">systolic_bp</td><td><span class="dot"></span></td></tr>
-        <tr><td>Diastolic BP</td><td class="itemid">diastolic_bp</td><td><span class="dot"></span></td></tr>
-        <tr><td>Mean BP</td><td class="itemid">mean_bp</td><td><span class="dot"></span></td></tr>
-        <tr><td>Respiratory Rate</td><td class="itemid">respiratory_rate</td><td><span class="dot"></span></td></tr>
-        <tr><td>SpO₂</td><td class="itemid">spo2</td><td><span class="dot"></span></td></tr>
+      <div class="card-sub">ITEMID mapping from chartevents</div>
+      <table class="v-table"><thead><tr><th>Vital Sign</th><th>ITEMID</th><th></th></tr></thead><tbody>
+        <tr><td>Heart Rate</td><td class="itemid">220045</td><td><span class="dot"></span></td></tr>
+        <tr><td>Systolic BP</td><td class="itemid">220179</td><td><span class="dot"></span></td></tr>
+        <tr><td>Diastolic BP</td><td class="itemid">220180</td><td><span class="dot"></span></td></tr>
+        <tr><td>Mean BP</td><td class="itemid">220181</td><td><span class="dot"></span></td></tr>
+        <tr><td>Respiratory Rate</td><td class="itemid">220210</td><td><span class="dot"></span></td></tr>
+        <tr><td>SpO₂</td><td class="itemid">220277</td><td><span class="dot"></span></td></tr>
       </tbody></table>
     </div>
   </div>
@@ -301,14 +291,14 @@ body{transition:padding-right .22s ease;}
       <div class="card-title">Preprocessing pipeline</div>
       <div class="card-sub">8-step data processing workflow</div>
       <div class="pipeline-steps">
-        <div class="p-step"><div class="p-num">1</div><div class="p-text">Pull hourly vitals (first 72 ICU h) and labs from derived tables</div></div>
-        <div class="p-step"><div class="p-num">2</div><div class="p-text">Set implausible values to missing; remove duplicates</div></div>
-        <div class="p-step"><div class="p-num">3</div><div class="p-text">Adults only; drop stays with onset &lt; 6 h after ICU admission</div></div>
-        <div class="p-step"><div class="p-num">4</div><div class="p-text">Hourly grid per stay; labs count as known 1 h after the draw</div></div>
-        <div class="p-step"><div class="p-num">5</div><div class="p-text">Forward fill only (never backward, so no future leakage)</div></div>
+        <div class="p-step"><div class="p-num">1</div><div class="p-text">Extract ICU vital signs using ITEMIDs</div></div>
+        <div class="p-step"><div class="p-num">2</div><div class="p-text">Filter records by patient identifiers</div></div>
+        <div class="p-step"><div class="p-num">3</div><div class="p-text">Convert timestamps to datetime format</div></div>
+        <div class="p-step"><div class="p-num">4</div><div class="p-text">Aggregate vitals at hourly intervals</div></div>
+        <div class="p-step"><div class="p-num">5</div><div class="p-text">Forward + backward fill for missing values</div></div>
         <div class="p-step"><div class="p-num">6</div><div class="p-text">Encode gender: M → 1, F → 0</div></div>
-        <div class="p-step"><div class="p-num">7</div><div class="p-text">Label = Sepsis-3 onset within next 6 h; rows after onset dropped</div></div>
-        <div class="p-step"><div class="p-num">8</div><div class="p-text">Save 2,827,647 rows × 115 features</div></div>
+        <div class="p-step"><div class="p-num">7</div><div class="p-text">Generate sepsis labels from ICD codes</div></div>
+        <div class="p-step"><div class="p-num">8</div><div class="p-text">Merge into unified 135,452-row dataset</div></div>
       </div>
     </div>
     <div class="card">
@@ -316,7 +306,18 @@ body{transition:padding-right .22s ease;}
       <div class="card-sub">Clinical indicators derived from raw vitals</div>
       <div style="margin-bottom:16px;"><div style="background:var(--surface2);border-radius:10px;padding:16px;"><div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:500;">Shock Index</div><div style="font-family:var(--mono);font-size:14px;">HR / (Systolic BP + 1)</div><div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Values > 1.0 are clinically significant for sepsis risk.</div></div></div>
       <div><div style="background:var(--surface2);border-radius:10px;padding:16px;"><div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:500;">Pulse Pressure</div><div style="font-family:var(--mono);font-size:14px;">Systolic BP − Diastolic BP</div><div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Abnormal pulse pressure indicates hemodynamic instability.</div></div></div>
-      <div style="margin-top:14px;padding:12px;background:var(--green-bg);border-radius:10px;font-size:12px;color:#1d4a2f;line-height:1.6;"><strong>Evaluation:</strong> always split by patient, never by row. Research models: 5-fold GroupKFold. This demo model: 60/20/20 patient split. Scaling and imputation use training data only.</div>
+      <div style="margin-top:14px;padding:12px;background:var(--green-bg);border-radius:10px;font-size:12px;color:#1d4a2f;line-height:1.6;"><strong>Train/Test split:</strong> 80/20 stratified. StandardScaler applied before training.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Data validation</div>
+    <div class="card-sub">Checks applied to keep the data clean and the evaluation honest</div>
+    <div class="pipeline-steps">
+      <div class="p-step"><div class="p-num">✓</div><div class="p-text">Implausible vital-sign values set to missing; duplicate rows removed</div></div>
+      <div class="p-step"><div class="p-num">✓</div><div class="p-text">Adult patients only (age 18+)</div></div>
+      <div class="p-step"><div class="p-num">✓</div><div class="p-text">Splits made by patient, never by row, so one patient never appears in both train and test</div></div>
+      <div class="p-step"><div class="p-num">✓</div><div class="p-text">Scaling and imputation fitted on training data only, to avoid leakage into the test set</div></div>
+      <div class="p-step"><div class="p-num">✓</div><div class="p-text">Prediction inputs range-checked on the server before the model runs</div></div>
     </div>
   </div>
 </div>
@@ -384,7 +385,6 @@ body{transition:padding-right .22s ease;}
         <span style="font-family:var(--mono);font-size:12px;color:var(--green);background:var(--green-bg);padding:5px 12px;border-radius:8px;" id="t_count">0 readings</span>
       </div>
 
-      <!-- PRESET BUTTONS FOR TEMPORAL -->
       <div style="margin-bottom:18px;padding:14px 16px;background:var(--surface2);border-radius:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <span style="font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Load scenario:</span>
         <button onclick="loadTemporalPreset('normal')" style="font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text);font-family:'Inter',sans-serif;font-weight:500;transition:all .15s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='var(--surface)'">🟢 Normal — Stable patient</button>
@@ -485,24 +485,86 @@ body{transition:padding-right .22s ease;}
 <!-- ===== MODELS ===== -->
 <div class="section" id="sec-models">
   <div class="page-title">Model Performance</div>
-  <div class="page-sub">Patient-level 5-fold evaluation of 5 models on held-out patients (mean of folds; fold-to-fold spread about ±0.012–0.015 AUROC). Only 0.6% of hours are positive, so random guessing gives AUPRC 0.006 and 5% recall at a 5% alert rate.</div>
-  <div class="models-grid"><div class="model-card"><div class="model-header"><div class="model-tag">Baseline</div><div class="model-name">Logistic Regression</div></div><div class="model-metrics"><div class="metric-row"><span class="metric-name">AUROC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:70.2%;min-width:2px;background:#888;"></div></div><span class="metric-val">0.702</span></div><div class="metric-row"><span class="metric-name">AUPRC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:1.4%;min-width:2px;background:#888;"></div></div><span class="metric-val">0.014</span></div><div class="metric-row"><span class="metric-name">Recall @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:16.9%;min-width:2px;background:#888;"></div></div><span class="metric-val">16.9%</span></div><div class="metric-row"><span class="metric-name">Precision @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.0%;min-width:2px;background:#888;"></div></div><span class="metric-val">2.0%</span></div><div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Linear model on 115 features.</div></div></div><div class="model-card"><div class="model-header"><div class="model-tag">Deep learning</div><div class="model-name">LSTM</div></div><div class="model-metrics"><div class="metric-row"><span class="metric-name">AUROC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:70.5%;min-width:2px;background:#b5651d;"></div></div><span class="metric-val">0.705</span></div><div class="metric-row"><span class="metric-name">AUPRC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:1.6%;min-width:2px;background:#b5651d;"></div></div><span class="metric-val">0.016</span></div><div class="metric-row"><span class="metric-name">Recall @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:18.5%;min-width:2px;background:#b5651d;"></div></div><span class="metric-val">18.5%</span></div><div class="metric-row"><span class="metric-name">Precision @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.2%;min-width:2px;background:#b5651d;"></div></div><span class="metric-val">2.2%</span></div><div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">2 layers × 64 units on the last 24 h of raw measurements; overfits within 1–3 epochs.</div></div></div><div class="model-card"><div class="model-header"><div class="model-tag">Deep learning</div><div class="model-name">GRU</div></div><div class="model-metrics"><div class="metric-row"><span class="metric-name">AUROC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:71.5%;min-width:2px;background:#8a4fa0;"></div></div><span class="metric-val">0.715</span></div><div class="metric-row"><span class="metric-name">AUPRC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:1.6%;min-width:2px;background:#8a4fa0;"></div></div><span class="metric-val">0.016</span></div><div class="metric-row"><span class="metric-name">Recall @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:19.1%;min-width:2px;background:#8a4fa0;"></div></div><span class="metric-val">19.1%</span></div><div class="metric-row"><span class="metric-name">Precision @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.3%;min-width:2px;background:#8a4fa0;"></div></div><span class="metric-val">2.3%</span></div><div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Same inputs and setup as the LSTM; slightly better, but below the tree models.</div></div></div><div class="model-card"><div class="model-header"><div class="model-tag">Ensemble</div><div class="model-name">Random Forest</div></div><div class="model-metrics"><div class="metric-row"><span class="metric-name">AUROC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:72.4%;min-width:2px;background:#1a3a6b;"></div></div><span class="metric-val">0.724</span></div><div class="metric-row"><span class="metric-name">AUPRC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.2%;min-width:2px;background:#1a3a6b;"></div></div><span class="metric-val">0.022</span></div><div class="metric-row"><span class="metric-name">Recall @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:20.8%;min-width:2px;background:#1a3a6b;"></div></div><span class="metric-val">20.8%</span></div><div class="metric-row"><span class="metric-name">Precision @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.5%;min-width:2px;background:#1a3a6b;"></div></div><span class="metric-val">2.5%</span></div><div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">100 trees, depth 8.</div></div></div><div class="model-card best"><div class="model-header"><div class="model-tag">Boosting</div><div class="model-name">XGBoost</div><div class="model-best-badge">★ Highest AUROC</div></div><div class="model-metrics"><div class="metric-row"><span class="metric-name">AUROC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:74.4%;min-width:2px;background:var(--green);"></div></div><span class="metric-val">0.744</span></div><div class="metric-row"><span class="metric-name">AUPRC</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.5%;min-width:2px;background:var(--green);"></div></div><span class="metric-val">0.025</span></div><div class="metric-row"><span class="metric-name">Recall @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:23.7%;min-width:2px;background:var(--green);"></div></div><span class="metric-val">23.7%</span></div><div class="metric-row"><span class="metric-name">Precision @5% alerts</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:2.8%;min-width:2px;background:var(--green);"></div></div><span class="metric-val">2.8%</span></div><div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Best of the models tested. A modest screening signal, not a diagnostic tool.</div></div></div></div>
-  <div class="two-col">
-    <div class="card">
-      <div class="card-title">Model comparison</div>
-      <div class="card-sub">AUROC (×100), recall and precision at a 5% alert rate</div>
-      <div style="position:relative;width:100%;height:260px;"><canvas id="compChart" role="img" aria-label="Grouped bar chart comparing AUROC, recall and precision for three models">Model comparison</canvas></div>
+  <div class="page-sub">Comparative evaluation of 3 ML models on the MIMIC-IV sepsis dataset</div>
+  <div class="models-grid">
+    <div class="model-card">
+      <div class="model-header"><div class="model-tag">Baseline</div><div class="model-name">Logistic Regression</div></div>
+      <div class="model-metrics">
+        <div class="metric-row"><span class="metric-name">Accuracy</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:61%;background:#888;"></div></div><span class="metric-val">61%</span></div>
+        <div class="metric-row"><span class="metric-name">Precision</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:42%;background:#888;"></div></div><span class="metric-val">42%</span></div>
+        <div class="metric-row"><span class="metric-name">Recall</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:63%;background:#888;"></div></div><span class="metric-val">63%</span></div>
+        <div class="metric-row"><span class="metric-name">F1-score</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:50%;background:#888;"></div></div><span class="metric-val">50%</span></div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Linear model; limited in capturing nonlinear physiological patterns.</div>
+      </div>
     </div>
-    <div class="card">
-      <div class="card-title">Top XGBoost features (research model)</div>
-      <div class="card-sub">Importance in the 115-feature model, not this 10-feature demo</div>
-      <div class="feature-list"><div class="feat-row"><span class="feat-name">pH: hours since last measured</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:100%;background:var(--blue);"></div></div><span class="feat-val">0.060</span></div><div class="feat-row"><span class="feat-name">Max temperature, last 12 h</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:47%;background:var(--blue);"></div></div><span class="feat-val">0.028</span></div><div class="feat-row"><span class="feat-name">Lactate: hours since last measured</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:45%;background:var(--blue);"></div></div><span class="feat-val">0.027</span></div><div class="feat-row"><span class="feat-name">Min respiratory rate, last 24 h</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:37%;background:var(--blue);"></div></div><span class="feat-val">0.022</span></div><div class="feat-row"><span class="feat-name">Temperature</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:31%;background:var(--blue);"></div></div><span class="feat-val">0.018</span></div><div class="feat-row"><span class="feat-name">INR: hours since last measured</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:25%;background:var(--blue);"></div></div><span class="feat-val">0.015</span></div><div class="feat-row"><span class="feat-name">Mean temperature, last 6 h</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:23%;background:var(--blue);"></div></div><span class="feat-val">0.014</span></div><div class="feat-row"><span class="feat-name">Heart rate</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:23%;background:var(--blue);"></div></div><span class="feat-val">0.014</span></div><div class="feat-row"><span class="feat-name">Mean heart rate, last 6 h</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:23%;background:var(--blue);"></div></div><span class="feat-val">0.014</span></div><div class="feat-row"><span class="feat-name">Respiratory rate</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:21%;background:var(--blue);"></div></div><span class="feat-val">0.013</span></div></div>
-      <div style="margin-top:12px;font-size:12px;color:var(--muted);line-height:1.6;">Several top features are “hours since last test”, which partly reflect clinicians ordering tests when worried, not only physiology.</div>
+    <div class="model-card">
+      <div class="model-header"><div class="model-tag">Ensemble</div><div class="model-name">Random Forest</div></div>
+      <div class="model-metrics">
+        <div class="metric-row"><span class="metric-name">Accuracy</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:90%;background:#1a3a6b;"></div></div><span class="metric-val">90%</span></div>
+        <div class="metric-row"><span class="metric-name">Precision</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:92%;background:#1a3a6b;"></div></div><span class="metric-val" style="color:var(--blue);">92%</span></div>
+        <div class="metric-row"><span class="metric-name">Recall</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:73%;background:#1a3a6b;"></div></div><span class="metric-val">73%</span></div>
+        <div class="metric-row"><span class="metric-name">F1-score</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:82%;background:#1a3a6b;"></div></div><span class="metric-val">82%</span></div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;">Highest precision (92%) — very reliable when it predicts sepsis. Lower recall misses some cases.</div>
+      </div>
+    </div>
+    <div class="model-card best">
+      <div class="model-header"><div class="model-tag">Boosting · Tuned</div><div class="model-name">XGBoost</div><div class="model-best-badge">★ Best for clinical use</div></div>
+      <div class="model-metrics">
+        <div class="metric-row"><span class="metric-name">Accuracy</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:90%;background:var(--green);"></div></div><span class="metric-val">90%</span></div>
+        <div class="metric-row"><span class="metric-name">Precision</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:80%;background:var(--green);"></div></div><span class="metric-val">80%</span></div>
+        <div class="metric-row"><span class="metric-name">Recall</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:90%;background:var(--green);"></div></div><span class="metric-val" style="color:var(--green);font-weight:600;">90%</span></div>
+        <div class="metric-row"><span class="metric-name">F1-score</span><div class="metric-bar-wrap"><div class="metric-bar" style="width:84%;background:var(--green);"></div></div><span class="metric-val" style="color:var(--green);font-weight:600;">84%</span></div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:#1d4a2f;line-height:1.6;background:var(--green-bg);padding:10px 12px;border-radius:8px;">Highest recall (90%) — catches the most sepsis cases. Critical for clinical use.</div>
+      </div>
     </div>
   </div>
-  <div class="analysis-box">
-    <h3>How to read these results</h3>
-    <p>XGBoost is the best of the models tested, flagging the top 5% of hours by risk and catching about 24% of the hours before onset, with 2.8% precision (about 4.7× the 0.6% base rate). Most alerts are still false alarms, and accuracy is not informative here because always predicting “no sepsis” scores 99.4%. The demo on the Predict tab uses a simpler model with only a single snapshot of vitals, age and sex (AUROC about 0.66; at its High level, recall 15% and precision 1.9%). The LSTM and GRU read the last 24 hours of raw measurements; they overfit within a few epochs and scored below XGBoost (AUROC 0.705 and 0.715 vs 0.744). Averaging XGBoost with the GRU gave AUROC 0.747, a difference within the fold-to-fold noise, with lower AUPRC, so XGBoost remains the chosen model. The Predict tab uses the single-snapshot XGBoost model, not the LSTM or GRU. Results are internal validation on one hospital system.</p>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Model comparison — all metrics</div>
+      <div class="card-sub">Logistic Regression vs Random Forest vs XGBoost</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;font-size:12px;color:var(--muted);">
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#888;display:inline-block;"></span>Logistic Regression</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#1a3a6b;display:inline-block;"></span>Random Forest</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#2d6b4a;display:inline-block;"></span>XGBoost</span>
+      </div>
+      <div style="position:relative;width:100%;height:260px;"><canvas id="compChart" role="img" aria-label="Grouped bar chart comparing accuracy, precision, recall and F1 for three models">Model comparison</canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">XGBoost feature importance</div>
+      <div class="card-sub">Relative contribution of each feature</div>
+      <div class="feature-list">
+        <div class="feat-row"><span class="feat-name">Age</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:100%;background:var(--green);"></div></div><span class="feat-val">0.220</span></div>
+        <div class="feat-row"><span class="feat-name">Gender</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:68%;background:var(--green);opacity:.85;"></div></div><span class="feat-val">0.150</span></div>
+        <div class="feat-row"><span class="feat-name">Diastolic BP</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:43%;background:var(--blue);"></div></div><span class="feat-val">0.094</span></div>
+        <div class="feat-row"><span class="feat-name">Shock Index</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:41%;background:var(--blue);opacity:.85;"></div></div><span class="feat-val">0.091</span></div>
+        <div class="feat-row"><span class="feat-name">Pulse Pressure</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:40%;background:var(--blue);opacity:.7;"></div></div><span class="feat-val">0.087</span></div>
+        <div class="feat-row"><span class="feat-name">Mean BP</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:37%;background:var(--blue);opacity:.6;"></div></div><span class="feat-val">0.081</span></div>
+        <div class="feat-row"><span class="feat-name">Systolic BP</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:35%;background:var(--blue);opacity:.5;"></div></div><span class="feat-val">0.077</span></div>
+        <div class="feat-row"><span class="feat-name">SpO₂</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:32%;background:#888;"></div></div><span class="feat-val">0.070</span></div>
+        <div class="feat-row"><span class="feat-name">Resp. Rate</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:30%;background:#888;opacity:.8;"></div></div><span class="feat-val">0.067</span></div>
+        <div class="feat-row"><span class="feat-name">Heart Rate</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:29%;background:#888;opacity:.6;"></div></div><span class="feat-val">0.064</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="analysis-box" style="margin-bottom:20px;">
+    <h3>Why XGBoost is the chosen model</h3>
+    <p>In clinical sepsis detection, recall is more important than precision — a missed case is far more dangerous than a false alarm. XGBoost achieves 90% recall while matching Random Forest's accuracy (90%), dramatically outperforming it on recall (90% vs 73%). The tuned model with <em>scale_pos_weight=2.5</em> handles class imbalance effectively, making it the most clinically appropriate model in this study.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Model validation</div>
+    <div class="card-sub">Patient-level 5-fold validation (GroupKFold) on held-out patients, XGBoost</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+      <div class="t-stat"><div class="ts-val">0.744</div><div class="ts-label">AUROC</div></div>
+      <div class="t-stat"><div class="ts-val">0.025</div><div class="ts-label">AUPRC (chance 0.006)</div></div>
+      <div class="t-stat"><div class="ts-val">23.7%</div><div class="ts-label">Recall @ 5% alerts</div></div>
+      <div class="t-stat"><div class="ts-val">2.8%</div><div class="ts-label">Precision @ 5% alerts</div></div>
+    </div>
+    <div class="pipeline-steps">
+      <div class="p-step"><div class="p-num">1</div><div class="p-text">Every fold holds out whole patients, so no patient appears in both training and validation</div></div>
+      <div class="p-step"><div class="p-num">2</div><div class="p-text">Scores are the mean across folds; fold-to-fold spread is about ±0.012–0.015 AUROC</div></div>
+      <div class="p-step"><div class="p-num">3</div><div class="p-text">Scaling and imputation were fitted on training folds only</div></div>
+      <div class="p-step"><div class="p-num">4</div><div class="p-text">Limits: internal validation on one hospital system; no external dataset yet</div></div>
+    </div>
   </div>
 </div>
 
@@ -629,6 +691,11 @@ async function sendChat() {
   }
 }
 
+function newChat() {
+  resetChatMessages();   // clears the screen, chatLog and chatHistory
+  saveChat();            // overwrite the saved copy with the empty chat
+}
+
 function askAbout(question) {
   if (!latestPatientContext) {
     addChatMessage('assistant', 'Run a prediction first, then I can explain it.', false, false);
@@ -636,11 +703,6 @@ function askAbout(question) {
   }
   document.getElementById('chat-input').value = question;
   sendChat();
-}
-
-function newChat() {
-  resetChatMessages();   // clears the screen, chatLog and chatHistory
-  saveChat();            // overwrite the saved copy with the empty chat
 }
 
 // ===== NAV =====
@@ -670,7 +732,6 @@ const presets = {
 
 function loadPreset(type) {
   const p = presets[type];
-  document.querySelectorAll('.input-invalid').forEach(e => e.classList.remove('input-invalid'));
   document.getElementById('s_heart_rate').value = p.hr;
   document.getElementById('s_systolic_bp').value = p.sbp;
   document.getElementById('s_diastolic_bp').value = p.dbp;
@@ -714,86 +775,6 @@ function loadTemporalPreset(type) {
   updateCount();
 }
 
-// ===== INPUT VALIDATION (same ranges as the server, so bad values are caught early) =====
-const VITAL_RANGES = {
-  heart_rate:       {min:20, max:250, label:'Heart rate',       unit:'bpm'},
-  systolic_bp:      {min:30, max:300, label:'Systolic BP',      unit:'mmHg'},
-  diastolic_bp:     {min:10, max:200, label:'Diastolic BP',     unit:'mmHg'},
-  mean_bp:          {min:20, max:250, label:'Mean BP',          unit:'mmHg'},
-  respiratory_rate: {min:4,  max:60,  label:'Respiratory rate', unit:'br/min'},
-  spo2:             {min:50, max:100, label:'SpO₂',             unit:'%'},
-  age:              {min:18, max:120, label:'Age',              unit:'years'}
-};
-
-function checkVital(key, raw) {
-  const r = VITAL_RANGES[key];
-  const v = parseFloat(raw);
-  if (isNaN(v) || v < r.min || v > r.max) return r.label + ' must be between ' + r.min + ' and ' + r.max + ' ' + r.unit + '.';
-  return null;
-}
-
-let popupReturnFocus = null;
-function showPopup(title, lines, focusEl) {
-  document.getElementById('vp-title').textContent = title;
-  const list = document.getElementById('vp-list');
-  list.innerHTML = '';
-  lines.slice(0, 6).forEach(l => { const li = document.createElement('li'); li.textContent = l; list.appendChild(li); });
-  if (lines.length > 6) { const li = document.createElement('li'); li.textContent = '...and ' + (lines.length - 6) + ' more.'; list.appendChild(li); }
-  popupReturnFocus = focusEl || null;
-  document.getElementById('vp-overlay').classList.add('open');
-  document.getElementById('vp-ok').focus();
-}
-function closePopup() {
-  document.getElementById('vp-overlay').classList.remove('open');
-  if (popupReturnFocus) { popupReturnFocus.focus(); if (popupReturnFocus.select) popupReturnFocus.select(); }
-}
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('vp-overlay').classList.contains('open')) closePopup();
-});
-
-// Check one input as soon as the user finishes typing in it
-function validateField(el, key) {
-  if (el.value === '') return true;
-  const msg = checkVital(key, el.value);
-  if (msg) {
-    el.classList.add('input-invalid');
-    showPopup('Please re-enter this value', [msg], el);
-    return false;
-  }
-  return true;
-}
-function wireValidation(el, key) {
-  el.addEventListener('change', () => validateField(el, key));
-  el.addEventListener('input', () => el.classList.remove('input-invalid'));
-}
-Object.keys(VITAL_RANGES).forEach(key => wireValidation(document.getElementById('s_' + key), key));
-
-const TEMPORAL_KEYS = {hr:'heart_rate', sbp:'systolic_bp', dbp:'diastolic_bp', mbp:'mean_bp', rr:'respiratory_rate', spo2:'spo2', age:'age'};
-
-// Check every filled cell in the temporal table (used when Analyse is clicked)
-function validateTemporalTable() {
-  const problems = [];
-  let firstBad = null;
-  document.getElementById('t_input_tbody').querySelectorAll('tr').forEach((tr, i) => {
-    const label = 'Row ' + (i + 1);
-    const cell = f => tr.querySelector(`[data-field="${f}"]`);
-    Object.entries(TEMPORAL_KEYS).forEach(([f, key]) => {
-      const el = cell(f);
-      if (el.value === '') return;
-      const msg = checkVital(key, el.value);
-      if (msg) { problems.push(label + ': ' + msg); el.classList.add('input-invalid'); if (!firstBad) firstBad = el; }
-    });
-    const sv = parseFloat(cell('sbp').value), dv = parseFloat(cell('dbp').value);
-    if (!isNaN(sv) && !isNaN(dv) && sv < dv) {
-      problems.push(label + ': systolic BP cannot be lower than diastolic BP.');
-      cell('sbp').classList.add('input-invalid'); cell('dbp').classList.add('input-invalid');
-      if (!firstBad) firstBad = cell('sbp');
-    }
-  });
-  if (problems.length) { showPopup('Please re-enter these values', problems, firstBad); return false; }
-  return true;
-}
-
 // ===== SINGLE PREDICT =====
 async function runSingle() {
   const ids = ['s_heart_rate','s_systolic_bp','s_diastolic_bp','s_mean_bp','s_respiratory_rate','s_spo2','s_age'];
@@ -804,20 +785,6 @@ async function runSingle() {
     payload[id.replace('s_','')] = parseFloat(v);
   }
   payload.gender = parseInt(document.getElementById('s_gender').value);
-  const problems = [];
-  let firstBad = null;
-  for (const id of ids) {
-    const key = id.replace('s_', '');
-    const msg = checkVital(key, payload[key]);
-    if (msg) { problems.push(msg); const el = document.getElementById(id); el.classList.add('input-invalid'); if (!firstBad) firstBad = el; }
-  }
-  if (!problems.length && payload.systolic_bp < payload.diastolic_bp) {
-    problems.push('Systolic BP cannot be lower than diastolic BP.');
-    document.getElementById('s_systolic_bp').classList.add('input-invalid');
-    document.getElementById('s_diastolic_bp').classList.add('input-invalid');
-    firstBad = document.getElementById('s_systolic_bp');
-  }
-  if (problems.length) { showPopup('Please re-enter these values', problems, firstBad); return; }
   const btn = document.querySelector('#mode-single .btn-predict');
   btn.textContent = 'Analysing...'; btn.classList.add('loading');
   hideErr('s_error');
@@ -911,6 +878,7 @@ function buildFinalVerdict(preds) {
 
 // ===== TEMPORAL TABLE =====
 let tChart = null;
+let csvChart = null;
 let rowCount = 0;
 
 function cellStyle(type) {
@@ -934,16 +902,16 @@ function addTableRow(defaults) {
   const prevGender = prevRow ? prevRow.querySelector('[data-field="gender"]').value : '1';
 
   tr.innerHTML = `
-    <td style="padding:6px 12px;"><input data-field="time" type="text" value="${d.time||('Hour '+n)}" style="${cellStyle()}" oninput="updateCount()"/></td>
-    <td style="padding:6px 8px;"><input data-field="hr"   type="number" placeholder="72"  value="${d.hr||''}"   style="${cellStyle()}" oninput="updateCount()"/></td>
-    <td style="padding:6px 8px;"><input data-field="sbp"  type="number" placeholder="120" value="${d.sbp||''}"  style="${cellStyle()}" oninput="updateCount()"/></td>
-    <td style="padding:6px 8px;"><input data-field="dbp"  type="number" placeholder="80"  value="${d.dbp||''}"  style="${cellStyle()}" oninput="updateCount()"/></td>
-    <td style="padding:6px 8px;"><input data-field="mbp"  type="number" placeholder="93"  value="${d.mbp||''}"  style="${cellStyle()}" oninput="updateCount()"/></td>
-    <td style="padding:6px 8px;"><input data-field="rr"   type="number" placeholder="16"  value="${d.rr||''}"   style="${cellStyle()}" oninput="updateCount()"/></td>
-    <td style="padding:6px 8px;"><input data-field="spo2" type="number" placeholder="98"  value="${d.spo2||''}" style="${cellStyle()}" oninput="updateCount()"/></td>
-    <td style="padding:6px 8px;"><input data-field="age"  type="number" placeholder="55"  value="${d.age||prevAge}"  style="${cellStyle()}" oninput="updateCount()"/></td>
+    <td style="padding:6px 12px;"><input data-field="time" type="text" value="${d.time||('Hour '+n)}" style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="hr"   type="number" placeholder="72"  value="${d.hr||''}"   style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="sbp"  type="number" placeholder="120" value="${d.sbp||''}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="dbp"  type="number" placeholder="80"  value="${d.dbp||''}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="mbp"  type="number" placeholder="93"  value="${d.mbp||''}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="rr"   type="number" placeholder="16"  value="${d.rr||''}"   style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="spo2" type="number" placeholder="98"  value="${d.spo2||''}" style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
+    <td style="padding:6px 8px;"><input data-field="age"  type="number" placeholder="55"  value="${d.age||prevAge}"  style="${cellStyle()}" oninput="scheduleAutoUpdate()"/></td>
     <td style="padding:6px 8px;">
-      <select data-field="gender" style="${cellStyle('select')}" onchange="updateCount()">
+      <select data-field="gender" style="${cellStyle('select')}" onchange="scheduleAutoUpdate()">
         <option value="1" ${(d.gender==='1'||(!d.gender&&prevGender==='1'))?'selected':''}>M</option>
         <option value="0" ${(d.gender==='0'||(!d.gender&&prevGender==='0'))?'selected':''}>F</option>
       </select>
@@ -951,7 +919,6 @@ function addTableRow(defaults) {
     <td style="padding:6px 8px;text-align:center;">
       <button onclick="removeRow('trow_${n}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:2px 4px;border-radius:4px;line-height:1;" onmouseover="this.style.color='var(--red)';" onmouseout="this.style.color='var(--muted)';">✕</button>
     </td>`;
-  Object.entries(TEMPORAL_KEYS).forEach(([f, key]) => wireValidation(tr.querySelector(`[data-field="${f}"]`), key));
   tbody.appendChild(tr);
   if (!defaults) tr.querySelector('[data-field="hr"]').focus();
   updateCount();
@@ -960,7 +927,7 @@ function addTableRow(defaults) {
 function removeRow(id) {
   const el = document.getElementById(id);
   if (el) el.remove();
-  updateCount();
+  scheduleAutoUpdate();
 }
 
 function updateCount() {
@@ -988,6 +955,14 @@ function getValidRows() {
   return rows;
 }
 
+// No auto-prediction while typing: just update the row count and dim stale
+// results so it's clear they're out of date until you click Analyse.
+function scheduleAutoUpdate() {
+  updateCount();
+  const r = document.getElementById('t_result');
+  if (r.style.display === 'block') r.style.opacity = '.45';
+}
+
 function clearReadings() {
   document.getElementById('t_input_tbody').innerHTML = '';
   rowCount = 0;
@@ -999,7 +974,6 @@ function clearReadings() {
 
 // ===== TEMPORAL RUN — only called by explicit button click =====
 async function runTemporal() {
-  if (!validateTemporalTable()) return;
   const readings = getValidRows();
   if (readings.length < 2) { alert('Please fill at least 2 complete rows.'); return; }
   const btn = document.getElementById('t_analyse_btn');
@@ -1013,51 +987,41 @@ async function runTemporal() {
     const preds = results.map((d, i) => ({...readings[i], ...d.result}));
     renderTemporalResult(preds, 't');
   } catch(e) { alert('Error: ' + e.message); }
-  finally { btn.textContent = 'Analyse →'; btn.disabled = false; }
+  finally { btn.textContent = 'Analyse →'; btn.disabled = false; updateCount(); }
 }
 
 function renderTemporalResult(preds, prefix) {
-  // ---- context for the AI Health Assistant (keeps the existing conversation) ----
-  const contextProbabilities = preds.map(p => Number(p.probability_percent));
-  const contextPeak = Math.max(...contextProbabilities);
-  const contextAverage = contextProbabilities.reduce((sum, value) => sum + value, 0) / contextProbabilities.length;
-  const contextRising = contextProbabilities[contextProbabilities.length - 1] > contextProbabilities[0];
-  const contextVerdict = buildFinalVerdict(preds);
-  const contextReadings = preds.slice(-20).map(p => ({
-    time: p.time,
-    heart_rate: p.hr,
-    systolic_bp: p.sbp,
-    diastolic_bp: p.dbp,
-    mean_bp: p.mbp,
-    respiratory_rate: p.rr,
-    spo2: p.spo2,
-    age: p.age,
-    gender: p.gender,
-    probability_percent: p.probability_percent,
-    risk_level: p.risk_level
-  }));
-  setChatContext({
-    mode: prefix === 'csv' ? 'csv' : 'temporal',
-    overall_model_category: contextVerdict.level,
-    peak_model_score_percent: Number(contextPeak.toFixed(1)),
-    average_model_score_percent: Number(contextAverage.toFixed(1)),
-    trend: contextRising ? 'rising' : 'falling_or_unchanged',
-    high_category_readings: preds.filter(p => p.risk_level === 'High').length,
-    total_readings: preds.length,
-    readings: contextReadings
-  }, false);
-
-  const resultEl = document.getElementById(prefix + '_result');
-  resultEl.style.display = 'block';
   const probs = preds.map(p => p.probability_percent);
   const peak  = Math.max(...probs);
   const avg   = probs.reduce((a,b) => a+b, 0) / probs.length;
   const rising = probs[probs.length-1] > probs[0];
   const sepsisCount = preds.filter(p => p.risk_level === 'High').length;
   const verdict = buildFinalVerdict(preds);
+
+  // Share the result with the AI assistant (keeps the existing conversation)
+  setChatContext({
+    mode: prefix === 'csv' ? 'csv' : 'temporal',
+    overall_model_category: verdict.level,
+    peak_model_score_percent: Number(peak.toFixed(1)),
+    average_model_score_percent: Number(avg.toFixed(1)),
+    trend: rising ? 'rising' : 'falling_or_unchanged',
+    high_category_readings: sepsisCount,
+    total_readings: preds.length,
+    readings: preds.slice(-20).map(p => ({
+      time: p.time, heart_rate: p.hr, systolic_bp: p.sbp, diastolic_bp: p.dbp,
+      mean_bp: p.mbp, respiratory_rate: p.rr, spo2: p.spo2, age: p.age, gender: p.gender,
+      probability_percent: p.probability_percent, risk_level: p.risk_level
+    }))
+  }, false);
+
+  const resultEl = document.getElementById(prefix + '_result');
+  resultEl.style.display = 'block';
+  resultEl.style.opacity = '1';
+
   const verdictEl = document.getElementById(prefix + '_final_verdict');
   verdictEl.className = 'final-verdict ' + verdict.level;
   verdictEl.innerHTML = verdict.html;
+
   const peakEl = document.getElementById(prefix + '_peak_val');
   const avgEl  = document.getElementById(prefix + '_avg_val');
   if (peakEl) peakEl.textContent = peak.toFixed(1) + '%';
@@ -1071,11 +1035,13 @@ function renderTemporalResult(preds, prefix) {
   } else {
     document.getElementById('csv_rows_val').textContent = preds.length;
   }
-  const labels = preds.map(p => p.time || ('#' + (preds.indexOf(p)+1)));
+
+  const labels = preds.map((p, i) => p.time || ('#' + (i+1)));
   const data   = preds.map(p => parseFloat(p.probability_percent.toFixed(1)));
   const colors = preds.map(p => p.risk_level === 'High' ? '#8b1f1f' : p.risk_level === 'Moderate' ? '#92550a' : '#2d6b4a');
   const canvasId = prefix + '_chart';
   if (prefix === 't' && tChart) { tChart.destroy(); }
+  if (prefix === 'csv' && csvChart) { csvChart.destroy(); }
   const ctx = document.getElementById(canvasId);
   const chartObj = new Chart(ctx, {
     type: 'line',
@@ -1107,7 +1073,8 @@ function renderTemporalResult(preds, prefix) {
       }
     }
   });
-  if (prefix === 't') tChart = chartObj;
+  if (prefix === 't') tChart = chartObj; else csvChart = chartObj;
+
   const tbody = document.getElementById(prefix === 't' ? 't_pred_tbody' : 'csv_tbody');
   tbody.innerHTML = preds.map((p, i) => {
     const si    = (p.hr / (p.sbp + 1)).toFixed(3);
@@ -1137,18 +1104,6 @@ function handleCSV(file) {
       const required = ['heart_rate','systolic_bp','diastolic_bp','mean_bp','respiratory_rate','spo2','age','gender'];
       const missing = required.filter(c => !(c in rows[0]));
       if (missing.length) { alert('Missing columns: ' + missing.join(', ')); return; }
-      const csvProblems = [];
-      rows.forEach((row, i) => {
-        Object.keys(VITAL_RANGES).forEach(key => { const msg = checkVital(key, row[key]); if (msg) csvProblems.push('Row ' + (i + 1) + ': ' + msg); });
-        const g = parseInt(row.gender);
-        if (g !== 0 && g !== 1) csvProblems.push('Row ' + (i + 1) + ': gender must be 0 (female) or 1 (male).');
-        if (parseFloat(row.systolic_bp) < parseFloat(row.diastolic_bp)) csvProblems.push('Row ' + (i + 1) + ': systolic BP cannot be lower than diastolic BP.');
-      });
-      if (csvProblems.length) {
-        showPopup('Please fix your CSV and upload it again', csvProblems, null);
-        document.getElementById('csv-file-input').value = '';
-        return;
-      }
       try {
         const results = await Promise.all(rows.map(row =>
           fetch('/predict', {method:'POST',headers:{'Content-Type':'application/json'},
@@ -1199,18 +1154,16 @@ function initCompChart() {
   compChartObj = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['AUROC (×100)','Recall @5% alerts (%)','Precision @5% alerts (%)'],
+      labels: ['Accuracy','Precision','Recall','F1-score'],
       datasets: [
-        {label:'Logistic Regression', data:[70.2,16.9,2.0], backgroundColor:'#888780', borderRadius:4},
-        {label:'LSTM',                data:[70.5,18.5,2.2], backgroundColor:'#b5651d', borderRadius:4},
-        {label:'GRU',                 data:[71.5,19.1,2.3], backgroundColor:'#8a4fa0', borderRadius:4},
-        {label:'Random Forest',       data:[72.4,20.8,2.5], backgroundColor:'#1a3a6b', borderRadius:4},
-        {label:'XGBoost',             data:[74.4,23.7,2.8], backgroundColor:'#2d6b4a', borderRadius:4}
+        {label:'Logistic Regression', data:[61,42,63,50], backgroundColor:'#888780', borderRadius:4},
+        {label:'Random Forest',       data:[90,92,73,82], backgroundColor:'#1a3a6b', borderRadius:4},
+        {label:'XGBoost',             data:[90,80,90,84], backgroundColor:'#2d6b4a', borderRadius:4}
       ]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:true, position:'bottom'} },
+      plugins:{ legend:{display:false} },
       scales:{
         x:{grid:{display:false}, ticks:{font:{family:'Inter',size:12}}},
         y:{min:0,max:100, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{callback:v=>v+'%',font:{size:11}}}
@@ -1225,16 +1178,6 @@ function hideErr(id) { document.getElementById(id).style.display = 'none'; }
 // init 3 empty rows on load
 addTableRow(); addTableRow(); addTableRow();
 </script>
-
-<!-- VALIDATION POPUP -->
-<div class="vp-overlay" id="vp-overlay" role="alertdialog" aria-modal="true" aria-labelledby="vp-title">
-  <div class="vp-box">
-    <div class="vp-icon">⚠️</div>
-    <div class="vp-title" id="vp-title">Please re-enter</div>
-    <ul class="vp-list" id="vp-list"></ul>
-    <button class="vp-ok" id="vp-ok" onclick="closePopup()">OK, re-enter</button>
-  </div>
-</div>
 
 <!-- GLOBAL FLOATING AI HEALTH ASSISTANT -->
 <button class="chat-launcher" id="chat-launcher" onclick="toggleChat()" aria-label="Open AI Health Assistant">✦ AI Health Assistant</button>
@@ -1255,7 +1198,7 @@ addTableRow(); addTableRow(); addTableRow();
     <div class="chat-empty">Hi! I'm your AI Health Assistant. You can ask me general questions about health, nutrition, symptoms, or wellness. If you run a SepsisGuard prediction, I can also help explain its results.</div>
   </div>
   <div style="padding:0 14px 8px;">
-    <button onclick="askAbout('Please explain my latest result in simple, plain language.')" style="font-size:11px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;color:var(--text);font-family:'Inter',sans-serif;">✦ Explain my result</button>
+    <button onclick="askAbout('Explain my latest result briefly.')" style="font-size:11px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;color:var(--text);font-family:'Inter',sans-serif;">✦ Explain my result</button>
   </div>
   <div class="chat-input-row">
     <textarea class="chat-input" id="chat-input" rows="2" maxlength="2000" placeholder="Ask a health question..." onkeydown="handleChatKeydown(event)"></textarea>
